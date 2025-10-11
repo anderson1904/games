@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Royal Elixir: A equipe de Clash Royale{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="author" content="Ana Luiza Saldanha e Nicolly Moura">
+    <meta name="description" content="Site Inicial sobre a equipe e o jogo.">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <meta property="og:title" content="Royal Elixir">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            background-color: rgb(53, 22, 65);
+            color: white;
+        }
+
+        
+        header {
+            background-color: #2c1038;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo img {
+            height: 60px;
+            width: 60px;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            margin: 0;
+            color: rgb(252, 255, 203);
+        }
+
+        nav {
+            display: flex;
+            gap: 25px;
+        }
+
+        nav a {
+            color: rgb(252, 255, 203);
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        nav a:hover {
+            color: violet;
+        }
+
+        section {
+            padding: 50px;
+            text-align: center;
+        }
+
+        p {
+            text-align: center;
+            color: blueviolet;
+            font-size: 22px;
+            margin-top: 20px;
+        }
+
+        
+        .store {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .item {
+            background: #2c1038;
+            border-radius: 15px;
+            padding: 20px;
+            width: 250px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .carousel {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .carousel img {
+            width: 100%;
+            display: none;
+        }
+
+        .carousel img.active {
+            display: block;
+        }
+
+        .carousel button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: white;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .carousel .prev { left: 5px; }
+        .carousel .next { right: 5px; }
+
+        .item h3 {
+            margin-top: 10px;
+            color: rgb(252, 255, 203);
+        }
+
+        .item p {
+            color: violet;
+            font-size: 18px;
+        }
+
+        
+        .about-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 50px;
+        }
+
+        .about-text {
+            flex: 1;
+            min-width: 300px;
+            background: #2c1038;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            text-align: left;
+        }
+
+        .players-info {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .player-card {
+            background: #2c1038;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: left;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+
+        .player-card img {
+            height: 100px; 
+            width: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .player-card h4 {
+            margin: 0;
+            color: rgb(252, 255, 203);
+        }
+
+        .player-card p {
+            margin: 2px 0;
+            color: violet;
+            font-size: 16px;
+            text-align: left; 
+        }
+    </style>
+</head>
+
+<body>
+    {% block nav-header %}
+    <header>
+        <div class="logo">
+            <img src="C:\Users\salda\OneDrive\Documentos\logo_royal_elixir.jpg" alt="logo da equipe">
+            <h1>Royal Elixir</h1>
+        </div>
+        <nav>
+            <a href="#sobre">Sobre</a>
+            <a href="#loja">Loja</a>
+            <a href="#login">Login</a>
+            <a href="#noticias">Notícias</a>
+            
+            
+        </nav>
+    </header>
+    {% endblock %}
+
+    {% block content %}
+    <section id="sobre">
+        <h2>Sobre a equipe e o jogo</h2>
+        <div class="about-section">
+            <div class="about-text">
+                <h3>O que é Clash Royale?</h3>
+                <p>
+                    O Clash Royale é um videogame de estratégia desenvolvido e publicado pela Supercell.
+                    Foi lançado em 02/03/2016 e mistura elementos de jogos de cartas colecionáveis,
+                    defesa de torres e batalhas online 1x1 ou 2x2.
+                </p>
+                <p>
+                    O jogo possui características como cartas, arenas, clãs e modos diferentes,
+                    sendo hoje um dos mais populares do mundo e presente no cenário de eSports.
+                </p>
+            </div>
+
+
+            <div class="players-info">
+                <div class="player-card">
+                    <img src="C:\Users\salda\OneDrive\Documentos\jogador1.jpg" alt="Foto do jogador Nicolly">
+                    <div>
+                        <h4>Nicolly</h4>
+                        <p>Idade: 18</p>
+                        <p>Carta preferida: Valquiria</p>
+                    </div>
+                </div>
+
+
+                <div class="player-card">
+                    <img src="C:\Users\salda\OneDrive\Documentos\jogador2.jpg" alt="Foto do jogador Ana Luiza">
+                    <div>
+                        <h4>Ana Luiza</h4>
+                        <p>Idade: 17</p>
+                        <p>Carta preferida: Princesa</p>
+                    </div>
+                </div>
+
+
+                <div class="player-card">
+                    <img src="C:\Users\salda\OneDrive\Documentos\jogador3.jpg" alt="Foto do jogador Anderson">
+                    <div>
+                        <h4>Anderson</h4>
+                        <p>Idade: 18</p>
+                        <p>Carta preferida: Golem</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="loja">
+        <h2>Loja</h2>
+        <p>Aqui você poderá comprar itens exclusivos da equipe Royal Elixir.</p>
+
+        <div class="store">
+            <div class="item">
+                <div class="carousel">
+                    <img src="C:\Users\salda\OneDrive\Documentos\camisa_frente.jpg" class="active" alt="Camisa Frente">
+                    <img src="C:\Users\salda\OneDrive\Documentos\camisa_costas.jpg" alt="Camisa Costa">
+                    <button class="prev">&#10094;</button>
+                    <button class="next">&#10095;</button>
+                </div>
+                <h3>Camisa Royal Elixir</h3>
+                <p>R$50,00</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="login">
+        <h2>Login</h2>
+        <p>Área de acesso para jogadores e administradores.</p>
+        <form>
+            <input type="text" placeholder="Usuário" required><br><br>
+            <input type="password" placeholder="Senha" required><br><br>
+            <button type="submit">Entrar</button>
+        </form>
+    </section>
+
+    <section id="noticias">
+        <h2>Notícias - Clash Royale</h2>
+        <p>Acompanhe as últimas novidades e atualizações do jogo Clash Royale!</p>
+    </section>
+    {% endblock %}
+
+    {% block Scripts %}
+    <script>
+        document.querySelectorAll('.carousel').forEach(carousel => {
+            const images = carousel.querySelectorAll('img');
+            let currentIndex = 0;
+
+            const showImage = index => {
+                images.forEach((img, i) => {
+                    img.classList.toggle('active', i === index);
+                });
+            };
+
+            carousel.querySelector('.prev').addEventListener('click', () => {
+                currentIndex = (currentIndex - 1 + images.length) % images.length;
+                showImage(currentIndex);
+            });
+
+            carousel.querySelector('.next').addEventListener('click', () => {
+                currentIndex = (currentIndex + 1) % images.length;
+                showImage(currentIndex);
+            });
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>
