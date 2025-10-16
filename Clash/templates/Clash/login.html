@@ -17,9 +17,8 @@
      <section id="login">
         <h2>Login</h2>
         <p>Área de acesso para jogadores e administradores.</p>
-        <form>
-            <input type="text" placeholder="Usuário" required><br><br>
-            <input type="password" placeholder="Senha" required><br><br>
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %} {{ form.as_p }}
             <button type="submit">Entrar</button>
         </form>
     </section>

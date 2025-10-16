@@ -87,7 +87,7 @@ class tbJogador_Partida(models.Model):
 
 class tbStream(models.Model):
     partida = models.ForeignKey(
-        Partida, 
+        tbPartida, 
         on_delete=models.CASCADE,
         related_name='transmissoes'
     )
@@ -133,7 +133,7 @@ class tbProduto(models.Model):
     preco_compra = models.DecimalField(max_digits=10, decimal_places=2)
     preco_venda = models.DecimalField(max_digits=10, decimal_places=2)
     especificacoes = models.ManyToManyField(
-        'Foto', 
+        'tbFoto', 
         through='tbEspecifica', 
         related_name='produtos_especificados',
     )
@@ -152,7 +152,9 @@ class tbFoto(models.Model):
         related_name='Foto',
     )
     foto = models.ImageField(
-        upload_to=gerar_caminho_Produto('fotos_produtos/')
+        upload_to=gerar_caminho_imagem_produto,
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -178,15 +180,15 @@ class tbEspecifica(models.Model):
 
 class tbCompra(models.Model):
     carrinho = models.ForeignKey(
-        Carrinho, 
+        tbCarrinho, 
         on_delete=models.CASCADE, 
         related_name='itens',
     )
     produto = models.ForeignKey(
-        Produto, 
+        tbProduto, 
         on_delete=models.CASCADE,
     )
-    quantidade = models.PositiveIntegerField(default=1).
+    quantidade = models.PositiveIntegerField(default=1)
     valor_compra = models.DecimalField(max_digits=10, decimal_places=2) 
     frete = models.DecimalField(
         max_digits = 10, 
