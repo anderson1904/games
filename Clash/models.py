@@ -32,18 +32,20 @@ def gerar_caminho_imagem_produto(instance, filename):
 
 #relativos a usuários e autenticação
 class tbUser(AbstractUser):
-    Idade = models.IntegerField(null = True, blank = True)
-    Data_Nascimento = models.DateField(null = True, blank = True)
+    Idade = models.IntegerField(null = True, blank = True)# inteiro contendo a idade do usuário
+    Data_Nascimento = models.DateField(null = True, blank = True)# data de nascimento do usuário
     Foto_Perfil = models.ImageField(
-        upload_to = gerar_caminho_foto_perfil,
-        null = True,
-        blank = True,
-    )
+        upload_to = gerar_caminho_foto_perfil,# função que gera o caminho da imagem
+        null = True, # o campo pode ser nulo no banco de dados
+        blank = True, # o campo pode ser deixado em branco no formulário
+    )# o django tem sua própria forma de lidar com imagens de forma eficiente
     @property
     def Idade(self):
-        if self.data_nascimento:
+        if self.Data_Nascimento:
             hoje = date.today()
-            return hoje.year - self.data_nascimento.year - ((hoje.month, hoje.day) < (self.data_nascimento.month, self.data_nascimento.day))
+            return hoje.year - self.Data_Nascimento.year - (
+                (hoje.month, hoje.day) < (self.Data_Nascimento.month, self.Data_Nascimento.day)
+            )
         return None
 
 class tbCartao(models.Model):

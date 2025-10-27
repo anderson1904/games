@@ -201,7 +201,7 @@
         </div>
         <nav>
             {% if user.is_authenticated %}
-                <img src="{{ user.Foto_Perfil.url }}" alt="Ícone de usuário" style="height:30px; width:30px; border-radius:50%; vertical-align:middle; margin-right:8px;">
+                <img src="" alt="Ícone de usuário" style="height:30px; width:30px; border-radius:50%; vertical-align:middle; margin-right:8px;">
                 <span>Bem-vindo, {{ user.username }}!</span>
             
                 <a href="{% url 'logout' %}">Logout</a>
