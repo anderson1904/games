@@ -8,6 +8,6 @@ urlpatterns = [
     path('login/', PaginaLogin.as_view(), name='login'),
     path('logout/', PaginaLogout.as_view(), name='logout'),
     path('registro/', PaginaRegistro.as_view(), name='registro'),
-
+    path('editar-perfil/', PaginaUserChange.as_view(), name='editar_perfil'),
 
 ]

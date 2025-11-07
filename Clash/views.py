@@ -3,9 +3,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .models import tbUser
 from django.contrib.auth.views import LoginView, LogoutView
-from django.views.generic.edit import CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import CreateView, UpdateView
 from django.urls import reverse_lazy
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 class PaginaLogin(LoginView):
     """
@@ -47,7 +48,22 @@ class PaginaRegistro(CreateView):
     # reverse_lazy('login') é perfeito: após se registrar, o usuário vai para a página de login.
     success_url = reverse_lazy('login')
 
+# Classe baseada em view (CBV) que permite ao usuário editar o próprio perfil.
+class PaginaUserChange(LoginRequiredMixin, UpdateView):
+    # Define o modelo que será alterado.
+    model = tbUser
+
+    # Define o formulário que será usado pela view.
+    form_class = CustomUserChangeForm
+
+    # Define o template que será renderizado.
+    template_name = 'Clash/edit_user.html'
+
+
+    # Esse método define qual objeto será editado — no caso, o próprio usuário logado.
+    def get_object(self, queryset=None):
+        return self.request.user
+
 def home(request):
     
     return render(request, 'Clash/base.html')
-

@@ -1,5 +1,3 @@
-# Clash/forms.py
-
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import * 
@@ -24,11 +22,13 @@ class CustomUserCreationForm(UserCreationForm): # formulário para criar um novo
             'Foto_Perfil',
         )# sendo necessário apenas acrecentar os campos extras do tbUser
 
+# Formulário baseado em ModelForm para o usuário editar o próprio perfil.
 class CustomUserChangeForm(forms.ModelForm):
-    #Formulário para um usuário ATUALIZAR seu próprio perfil.
+    # Define o modelo e os campos disponíveis.
     class Meta:
         model = tbUser
 
+        # Campos do formulário que poderão ser alterados pelo usuário.
         fields = (
             'first_name',
             'last_name',
@@ -36,7 +36,10 @@ class CustomUserChangeForm(forms.ModelForm):
             'Data_Nascimento',
             'Foto_Perfil',
         )
+
+        # Define widgets personalizados para os campos.
         widgets = {
+            # Exibe um seletor de data moderno no navegador.
             'Data_Nascimento': forms.DateInput(attrs={'type': 'date'}),
         }
 
@@ -154,25 +157,27 @@ class ProdutoForm(forms.ModelForm):
         # As 'tbFotos' seriam gerenciadas com um inline_formset_factory na view,
         # usando o formulário 'FotoForm' abaixo.
 
+"""
 class FotoForm(forms.ModelForm):
-    """
+    ""
     Formulário para a 'tbFoto'. Quase nunca usado sozinho,
     mas sim com um inline_formset_factory na view de 'Produto'.
-    """
+    ""
     class Meta:
         model = tbFoto
         fields = ('foto')
-
-
+"""
+"""
 class ItemCarrinhoUpdateForm(forms.ModelForm):
-    """
+    ""
     Este formulário NÃO é para criar um item (isso é feito com um botão).
     Este formulário é para ATUALIZAR a quantidade de um item
     que JÁ ESTÁ no carrinho.
-    """
+    ""
     class Meta:
         model = tbCompra # O modelo é 'tbCompra'
         fields = ('quantidade')
         widgets = {
             'quantidade': forms.NumberInput(attrs={'min': '1'})
         }
+"""

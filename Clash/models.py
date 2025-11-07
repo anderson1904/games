@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from datetime import date
 import uuid
 
 #__________________________________________
@@ -31,16 +32,24 @@ def gerar_caminho_imagem_produto(instance, filename):
 #|_____________________________________________|
 
 #relativos a usuários e autenticação
+# Modelo customizado de usuário que herda de AbstractUser.
 class tbUser(AbstractUser):
-    Idade = models.IntegerField(null = True, blank = True)# inteiro contendo a idade do usuário
-    Data_Nascimento = models.DateField(null = True, blank = True)# data de nascimento do usuário
+    # Campo inteiro opcional para armazenar a idade (pode ser calculada).
+    Idade = models.IntegerField(null=True, blank=True)
+
+    # Campo de data de nascimento do usuário.
+    Data_Nascimento = models.DateField(null=True, blank=True)
+
+    # Campo para a foto de perfil.
     Foto_Perfil = models.ImageField(
-        upload_to = gerar_caminho_foto_perfil,# função que gera o caminho da imagem
-        null = True, # o campo pode ser nulo no banco de dados
-        blank = True, # o campo pode ser deixado em branco no formulário
-    )# o django tem sua própria forma de lidar com imagens de forma eficiente
+        upload_to=gerar_caminho_foto_perfil,
+        null=True,
+        blank=True,
+    )
+
+    # Propriedade que calcula a idade com base na Data_Nascimento.
     @property
-    def Idade(self):
+    def idade(self):
         if self.Data_Nascimento:
             hoje = date.today()
             return hoje.year - self.Data_Nascimento.year - (
@@ -207,5 +216,3 @@ class tbCompra(models.Model):
 
     def __str__(self):
         return f"{self.quantidade}x {self.produto.nome} no Carrinho {self.carrinho.id}"
-
-
