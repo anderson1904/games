@@ -201,10 +201,14 @@
         </div>
         <nav>
             {% if user.is_authenticated %}
+                {%if not user.Foto_Perfil %}
+                {% else %}
                 <img src={{ user.Foto_Perfil.url }} alt="Ícone de usuário" style="height:30px; width:30px; border-radius:50%; vertical-align:middle; margin-right:8px;">
+                {% endif %}
                 <span>Bem-vindo, {{ user.username }}!</span>
-            
-                <a href="{% url 'logout' %}">Logout</a>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %} <button type="submit" class="btn btn-link nav-link">Sair</button>
+                </form>
             {% else %}
                 <a href="{% url 'login' %}">Login</a>
                 <a href="{% url 'registro' %}">Registrar</a>

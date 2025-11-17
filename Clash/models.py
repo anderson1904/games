@@ -34,8 +34,6 @@ def gerar_caminho_imagem_produto(instance, filename):
 #relativos a usuários e autenticação
 # Modelo customizado de usuário que herda de AbstractUser.
 class tbUser(AbstractUser):
-    # Campo inteiro opcional para armazenar a idade (pode ser calculada).
-    Idade = models.IntegerField(null=True, blank=True)
 
     # Campo de data de nascimento do usuário.
     Data_Nascimento = models.DateField(null=True, blank=True)

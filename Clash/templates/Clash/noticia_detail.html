@@ -1,0 +1,22 @@
+{% extends 'Clash/base.html' %} {% block content %}
+<div class="container">
+    <h1>{{ noticia.Titulo }}</h1>
+    
+    {% if noticia.Partida %}
+    <div class="alert alert-info">
+        <strong>Partida Relacionada:</strong> {{ noticia.Partida.Time_Adversario }}
+        <br>
+        <strong>Data:</strong> {{ noticia.Partida.Data_Prevista|date:"d/m/Y H:i" }}
+    </div>
+    {% endif %}
+    
+    <hr>
+    
+    <div class="noticia-conteudo">
+        {{ noticia.TextoHTML|safe }}
+    </div>
+    
+    <hr>
+    <a href="{% url 'noticia_list' %}" class="btn btn-outline-secondary">Voltar para Notícias</a>
+</div>
+{% endblock %}

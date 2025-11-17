@@ -125,3 +125,6 @@ MEDIA_URL = '/media/'
 # Define o caminho FÍSICO para a pasta raiz de mídia.
 # BASE_DIR / 'media' significa "crie/use uma pasta chamada 'media' na raiz do projeto".
 MEDIA_ROOT = BASE_DIR / 'media'
+
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False

@@ -1,69 +1,103 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from .models import tbUser
+from .models import *
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic import (
+    ListView, 
+    DetailView, 
+    CreateView, 
+    UpdateView, 
+    DeleteView
+)
+from datetime import datetime as dt
 from django.urls import reverse_lazy
-from .forms import CustomUserCreationForm, CustomUserChangeForm
+from .forms import CustomUserCreationForm, CustomUserChangeForm, NoticiaForm
 
 class PaginaLogin(LoginView):
-    """
-    CBV para a página de login.
-    """
-    # Define o template que será usado para renderizar o formulário de login.
-    template_name = 'Clash/login.html' # Vamos criar este arquivo no próximo passo
-    
-    # Se o usuário já estiver logado, redireciona ele para a página inicial.
-    #redirect_authenticated_user = True
 
-    # Define para onde o usuário será redirecionado após um login bem-sucedido.
-    # Usamos reverse_lazy para evitar erros de importação circular.
-    # OBS: É ainda melhor definir isso no settings.py (veja Passo 4).
+    template_name = 'Clash/login.html'
     def get_success_url(self):
-        return reverse_lazy('home') # 'index' é o nome da URL da sua página inicial
+        return reverse_lazy('home')
 
 class PaginaLogout(LogoutView):
-    """
-    CBV para fazer o logout do usuário.
-    Não precisa de um template, pois apenas desloga e redireciona.
-    """
-    # Define para onde o usuário será redirecionado após o logout.
-    # OBS: É ainda melhor definir isso no settings.py (veja Passo 4).
     def get_next_page(self):
-        return redirect('home') # Redireciona para a página de login após sair
+        return redirect('home')
 
 class PaginaRegistro(CreateView):
-    """
-    CBV para a página de registro de novos usuários.
-    """
-    # Define o formulário que será usado pela view.
     form_class = CustomUserCreationForm
-    
-    # Define o template que será renderizado.
-    template_name = 'Clash/registro.html' # Vamos criar este arquivo a seguir
-    
-    # Define para onde o usuário será redirecionado após um registro bem-sucedido.
-    # reverse_lazy('login') é perfeito: após se registrar, o usuário vai para a página de login.
+    template_name = 'Clash/registro.html' 
     success_url = reverse_lazy('login')
 
-# Classe baseada em view (CBV) que permite ao usuário editar o próprio perfil.
 class PaginaUserChange(LoginRequiredMixin, UpdateView):
-    # Define o modelo que será alterado.
     model = tbUser
-
-    # Define o formulário que será usado pela view.
     form_class = CustomUserChangeForm
-
-    # Define o template que será renderizado.
     template_name = 'Clash/edit_user.html'
-
-
-    # Esse método define qual objeto será editado — no caso, o próprio usuário logado.
+    success_url = reverse_lazy('home')
     def get_object(self, queryset=None):
         return self.request.user
 
 def home(request):
-    
     return render(request, 'Clash/base.html')
+
+class NoticiaCreateView(LoginRequiredMixin, CreateView):
+    model = tbNoticia
+    form_class = NoticiaForm
+    template_name = 'Clash/noticia_form.html' # Reutiliza o template de formulário
+
+    def form_valid(self, form):
+        # Salva a notícia e nos dá o objeto (self.object)
+        response = super().form_valid(form) 
+        
+        # Cria o registro de autoria na tabela tbEdita
+        tbEdita.objects.create(
+            tbUser=self.request.user,
+            tbNoticia=self.object,
+            Data_Edicao=dt.now(),    
+        )
+        return response
+
+    def get_success_url(self):
+        return reverse_lazy('noticia_detail', kwargs={'pk': self.object.pk})
+
+# --- READ (Listar) ---
+class NoticiaListView(ListView):
+    model = tbNoticia
+    template_name = 'Clash/noticia_list.html'
+    context_object_name = 'noticias'
+    ordering = ['-id']
+
+# --- READ (Detalhe) ---
+class NoticiaDetailView(DetailView):
+    model = tbNoticia
+    template_name = 'Clash/noticia_detail.html'
+    context_object_name = 'noticia'
+
+# --- UPDATE (Atualizar/Editar) ---
+class NoticiaUpdateView(LoginRequiredMixin, UpdateView):
+    model = tbNoticia
+    form_class = NoticiaForm
+    template_name = 'Clash/noticia_form.html'
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(tbedita__tbUser=self.request.user)
+
+    def form_valid(self, form):
+        noticia = form.save()
+        tbEdita.objects.create(
+            tbUser=self.request.user,
+            tbNoticia=noticia
+        )
+        return redirect(self.get_success_url())
+    def get_success_url(self):
+        return reverse_lazy('noticia_detail', kwargs={'pk': self.object.pk})
+
+# --- DELETE (Deletar) ---
+class NoticiaDeleteView(LoginRequiredMixin, DeleteView):
+    model = tbNoticia
+    template_name = 'Clash/noticia_confirm_delete.html'
+    success_url = reverse_lazy('noticia_list')
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(tbedita__tbUser = self.request.user)
