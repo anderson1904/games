@@ -5,18 +5,20 @@ from .models import *
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
-    ListView, 
-    DetailView, 
-    CreateView, 
-    UpdateView, 
-    DeleteView
+    ListView, DetailView, CreateView, 
+    UpdateView, DeleteView
 )
 from datetime import datetime as dt
 from django.urls import reverse_lazy
-from .forms import CustomUserCreationForm, CustomUserChangeForm, NoticiaForm
+from .forms import (
+    CustomUserCreationForm, CustomUserChangeForm,
+    NoticiaForm,
+)
+
+def home(request):
+    return render(request, 'Clash/base.html')
 
 class PaginaLogin(LoginView):
-
     template_name = 'Clash/login.html'
     def get_success_url(self):
         return reverse_lazy('home')
@@ -37,9 +39,6 @@ class PaginaUserChange(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('home')
     def get_object(self, queryset=None):
         return self.request.user
-
-def home(request):
-    return render(request, 'Clash/base.html')
 
 class NoticiaCreateView(LoginRequiredMixin, CreateView):
     model = tbNoticia

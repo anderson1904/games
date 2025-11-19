@@ -1,29 +1,14 @@
-<!DOCTYPE html>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Royal Elixir</title>
-    <link rel="stylesheet" href="style.css">
-    <meta charset="UTF-8">
 
-    <meta name="author" content="Ana Luiza Saldanha e Nicolly Moura">
-    <meta name="description" content="Site para login do royal elixir">
+{%extends 'Clash/base.html'%}
+{% block title %}Login{% endblock %}
+{%block content%}
 
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <meta property="og:title" content="Pagina de Login Royal Elixir">
-
-<head>
-
-<body>
-
-     <section id="login">
+    <section id="login">
         <h2>Login</h2>
         <p>Área de acesso para jogadores e administradores.</p>
-        <form method="post" action="{% url 'login' %}">
+        <form method="post" action="{% url 'login' %}" class ="form-box">
             {% csrf_token %} {{ form.as_p }}
-            <button type="submit">Entrar</button>
+            <button type="submit" class = 'btn-custom'>Entrar</button>
         </form>
     </section>
-
-
-</body>
-
-</html>
+{%endblock%}

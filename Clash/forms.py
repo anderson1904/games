@@ -30,6 +30,7 @@ class CustomUserChangeForm(forms.ModelForm):
 
         # Campos do formulário que poderão ser alterados pelo usuário.
         fields = (
+            "username",
             'first_name',
             'last_name',
             'email',
