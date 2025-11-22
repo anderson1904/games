@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.db import transaction
 from .models import *
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -10,13 +11,16 @@ from django.views.generic import (
 )
 from datetime import datetime as dt
 from django.urls import reverse_lazy
-from .forms import (
-    CustomUserCreationForm, CustomUserChangeForm,
-    NoticiaForm,
-)
+from .forms import *
 
 def home(request):
-    return render(request, 'Clash/base.html')
+    # listas de objetos para exibir na página inicial
+    lista_jogadores = tbJogador.objects.all()
+    # o nome que aparecerá no template de acordo com a lista
+    contexto = {
+        'jogadores': lista_jogadores
+    }
+    return render(request, 'Clash/base.html', contexto)
 
 class PaginaLogin(LoginView):
     template_name = 'Clash/login.html'
@@ -43,22 +47,80 @@ class PaginaUserChange(LoginRequiredMixin, UpdateView):
 class NoticiaCreateView(LoginRequiredMixin, CreateView):
     model = tbNoticia
     form_class = NoticiaForm
-    template_name = 'Clash/noticia_form.html' # Reutiliza o template de formulário
+    template_name = 'Clash/noticia_form.html'
 
-    def form_valid(self, form):
-        # Salva a notícia e nos dá o objeto (self.object)
-        response = super().form_valid(form) 
+    def get_context_data(self, **kwargs):
+        """Envia os 3 formulários para o template"""
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['partida_form'] = PartidaOpcionalForm(self.request.POST, prefix='partida')
+            context['stream_form'] = StreamOpcionalForm(self.request.POST, prefix='stream')
+        else:
+            context['partida_form'] = PartidaOpcionalForm(prefix='partida')
+            context['stream_form'] = StreamOpcionalForm(prefix='stream')
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """Processa o envio dos formulários"""
+        # Instancia os forms com prefixos para não misturar os dados
+        noticia_form = NoticiaForm(request.POST)
+        partida_form = PartidaOpcionalForm(request.POST, prefix='partida')
+        stream_form = StreamOpcionalForm(request.POST, prefix='stream')
+
+        # Verifica se a notícia básica é válida
+        if noticia_form.is_valid():
+            
+            # Verifica se o usuário tentou preencher dados da partida
+            # (Checamos se 'Time_Adversario' foi preenchido)
+            tem_partida = partida_form.data.get('partida-Time_Adversario')
+            
+            with transaction.atomic(): # Garante integridade do banco
+                partida_criada = None
+                
+                if tem_partida:
+                    # Se tem dados de partida, precisamos validar se estão completos
+                    # Aqui forçamos a validação manual já que colocamos required=False no form
+                    if all([partida_form.data.get('partida-Data_Prevista'), 
+                            partida_form.data.get('partida-Time_Adversario'),
+                            partida_form.data.get('partida-Modalidade')]):
+                        
+                        partida_criada = partida_form.save()
+                        
+                        # Se salvou a partida, tenta salvar o Stream
+                        if stream_form.data.get('stream-tipo'):
+                            stream = stream_form.save(commit=False)
+                            stream.partida = partida_criada
+                            stream.save()
+                    else:
+                        # Se preencheu partida pela metade, retorna erro
+                        partida_form.add_error(None, "Preencha todos os campos da partida.")
+                        return render(request, self.template_name, {
+                            'form': noticia_form,
+                            'partida_form': partida_form,
+                            'stream_form': stream_form
+                        })
+
+                # Salva a Notícia
+                noticia = noticia_form.save(commit=False)
+                if partida_criada:
+                    noticia.Partida = partida_criada
+                noticia.save()
+
+                # Cria o registro de Edição
+                tbEdita.objects.create(
+                    tbUser=self.request.user,
+                    tbNoticia=noticia,
+                    Data_Edicao=dt.now()
+                )
+                
+                return redirect(reverse_lazy('noticia_detail', kwargs={'pk': noticia.pk}))
         
-        # Cria o registro de autoria na tabela tbEdita
-        tbEdita.objects.create(
-            tbUser=self.request.user,
-            tbNoticia=self.object,
-            Data_Edicao=dt.now(),    
-        )
-        return response
-
-    def get_success_url(self):
-        return reverse_lazy('noticia_detail', kwargs={'pk': self.object.pk})
+        # Se notícia for inválida, recarrega a página com erros
+        return render(request, self.template_name, {
+            'form': noticia_form,
+            'partida_form': partida_form,
+            'stream_form': stream_form
+        })
 
 # --- READ (Listar) ---
 class NoticiaListView(ListView):
@@ -100,3 +162,134 @@ class NoticiaDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         queryset = super().get_queryset()
         return queryset.filter(tbedita__tbUser = self.request.user)
+
+
+
+# --- LISTAR PRODUTOS ---
+class ProdutoListView(LoginRequiredMixin, ListView):
+    model = tbProduto
+    template_name = 'Clash/produto_list.html'
+    context_object_name = 'produtos'
+
+# --- DETALHES DO PRODUTO ---
+class ProdutoDetailView(LoginRequiredMixin, DetailView):
+    model = tbProduto
+    template_name = 'Clash/produto_detail.html'
+    context_object_name = 'produto'
+
+# --- CRIAR PRODUTO (Complexo: Salva Produto + Fotos + Specs) ---
+class ProdutoCreateView(LoginRequiredMixin, CreateView):
+    model = tbProduto
+    form_class = ProdutoForm
+    template_name = 'Clash/produto_form.html'
+    def get_success_url(self):
+        # Redireciona para a página de detalhes do produto que acabou de ser criado
+        return reverse_lazy('produto_detail', kwargs={'pk': self.object.pk})
+    
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        if self.request.POST:
+            # Só precisamos do formset de FOTOS agora
+            data['fotos'] = FotoProdutoFormSet(self.request.POST, self.request.FILES)
+        else:
+            data['fotos'] = FotoProdutoFormSet()
+        return data
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        fotos = context['fotos']
+        
+        with transaction.atomic():
+            self.object = form.save()
+            if fotos.is_valid():
+                fotos.instance = self.object
+                fotos_salvas = fotos.save(commit=False)
+                for formulario in fotos.forms:
+                    if formulario.cleaned_data and not formulario.cleaned_data.get('DELETE'):
+                        foto_obj = formulario.save(commit=False)
+                        foto_obj.produto = self.object
+                        foto_obj.save()
+                        descricao_spec = formulario.cleaned_data.get('spec_descricao')
+                        if descricao_spec:
+                            tbEspecifica.objects.create(
+                                produto=self.object,
+                                foto=foto_obj,
+                                descricao=descricao_spec
+                            )
+        return redirect(self.get_success_url())
+# --- EDITAR PRODUTO ---
+class ProdutoUpdateView(LoginRequiredMixin, UpdateView):
+    model = tbProduto
+    form_class = ProdutoForm
+    template_name = 'Clash/produto_form.html' # Reutiliza o mesmo template
+    
+    def get_context_data(self, **kwargs):
+        """
+        Aqui nós PREPARAMOS os dados para mostrar na tela.
+        O desafio é pegar o texto da tabela 'tbEspecifica' e colocar 
+        dentro do campo 'spec_descricao' do formulário da foto.
+        """
+        data = super().get_context_data(**kwargs)
+        
+        if self.request.POST:
+            # Se o usuário enviou dados, recarregamos o formset com o que ele mandou
+            data['fotos'] = FotoProdutoFormSet(self.request.POST, self.request.FILES, instance=self.object)
+        else:
+            # Se é apenas o carregamento da página:
+            fotos_formset = FotoProdutoFormSet(instance=self.object)
+            
+            # --- LÓGICA DE PREENCHIMENTO AUTOMÁTICO ---
+            # Iteramos sobre cada formulário de foto que já existe
+            for form in fotos_formset.forms:
+                if form.instance.pk: # Verifica se é uma foto salva (não é um form vazio extra)
+                    # Tenta buscar se existe uma especificação para esta foto e este produto
+                    spec = tbEspecifica.objects.filter(
+                        produto=self.object, 
+                        foto=form.instance
+                    ).first()
+                    
+                    if spec:
+                        # Se achou, preenche o campo 'spec_descricao' com o valor do banco
+                        form.initial['spec_descricao'] = spec.descricao
+            
+            data['fotos'] = fotos_formset
+            
+        return data
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        fotos = context['fotos']
+        
+        with transaction.atomic():
+            # 1. Salva as alterações do Produto em si
+            self.object = form.save()
+            
+            # 2. Valida o Formset de Fotos
+            if fotos.is_valid():
+                fotos.save()
+                for formulario in fotos.forms:
+                    if formulario.cleaned_data.get('DELETE'):
+                        continue
+                    if formulario.instance.pk:
+                        descricao_digitada = formulario.cleaned_data.get('spec_descricao')
+                        if descricao_digitada:
+                            tbEspecifica.objects.update_or_create(
+                                produto=self.object,
+                                foto=formulario.instance,
+                                defaults={'descricao': descricao_digitada}
+                            )
+                        else:
+                            tbEspecifica.objects.filter(
+                                produto=self.object, 
+                                foto=formulario.instance
+                            ).delete()
+                
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('produto_detail', kwargs={'pk': self.object.pk})
+# --- DELETAR PRODUTO ---
+class ProdutoDeleteView(LoginRequiredMixin, DeleteView):
+    model = tbProduto
+    template_name = 'Clash/produto_confirm_delete.html'
+    success_url = reverse_lazy('produto_list')

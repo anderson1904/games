@@ -2,7 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import date
 import uuid
-
+from django.db.models.signals import pre_save, post_delete
+from django.dispatch import receiver
+import os
 #__________________________________________
 #|                                        |
 #|           funções auxiliares           |
@@ -34,10 +36,7 @@ def gerar_caminho_imagem_produto(instance, filename):
 #relativos a usuários e autenticação
 # Modelo customizado de usuário que herda de AbstractUser.
 class tbUser(AbstractUser):
-    # Campo de data de nascimento do usuário.
     Data_Nascimento = models.DateField(null=True, blank=True)
-    
-    # Campo para a foto de perfil.
     Foto_Perfil = models.ImageField(
         upload_to=gerar_caminho_foto_perfil,
         null=True,
@@ -62,7 +61,6 @@ class tbJogador(models.Model):
     Nome = models.CharField(max_length = 100)
     Nickname = models.CharField(max_length = 50)
     Data_Nascimento = models.DateField(null = True, blank = True)
-    Idade = models.PositiveIntegerField(null = True, blank = True)
     sobre = models.TextField()
     trofeus = models.IntegerField(default = 0)
     Foto_Jogador = models.ImageField(
@@ -72,15 +70,59 @@ class tbJogador(models.Model):
     )
     @property
     def idade(self):
-        if self.data_nascimento:
+        if self.Data_Nascimento:
             hoje = date.today()
-            return hoje.year - self.data_nascimento.year - (
-                (hoje.month, hoje.day) < (self.data_nascimento.month, self.data_nascimento.day)
+            return hoje.year - self.Data_Nascimento.year - (
+                (hoje.month, hoje.day) < (self.Data_Nascimento.month, self.Data_Nascimento.day)
             )
         return None
     
     def __str__(self):
-        return self.nickname
+        return self.Nickname
+
+def _delete_file(path):
+    if os.path.isfile(path):
+        os.remove(path)
+
+@receiver(post_delete, sender=tbUser)
+@receiver(post_delete, sender=tbJogador)
+def delete_image_on_delete(sender, instance, **kwargs):
+    # Verifica tbUser
+    if sender == tbUser and instance.Foto_Perfil:
+        _delete_file(instance.Foto_Perfil.path)
+    
+    # Verifica tbJogador
+    if sender == tbJogador and instance.Foto_Jogador:
+        _delete_file(instance.Foto_Jogador.path)
+
+@receiver(pre_save, sender=tbUser)
+@receiver(pre_save, sender=tbJogador)
+def delete_old_image_on_update(sender, instance, **kwargs):
+    if not instance.pk:
+        return False
+    try:
+        old_instance = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        return False
+    # Lógica para tbUser
+    if sender == tbUser:
+        try:
+            old_file = old_instance.Foto_Perfil
+            new_file = instance.Foto_Perfil
+            if old_file and old_file != new_file:
+                _delete_file(old_file.path)
+        except ValueError:
+            pass
+
+    # Lógica para tbJogador
+    if sender == tbJogador:
+        try:
+            old_file = old_instance.Foto_Jogador
+            new_file = instance.Foto_Jogador
+            if old_file and old_file != new_file:
+                _delete_file(old_file.path)
+        except ValueError:
+            pass
 
 #relativos a conteúdo e entretenimento
 class tbPartida(models.Model):
@@ -96,7 +138,7 @@ class tbStream(models.Model):
     partida = models.ForeignKey(
         tbPartida, 
         on_delete=models.CASCADE,
-        related_name='transmissoes'
+        related_name='transmissoes',
     )
     tipo = models.CharField(max_length=50)
     embed = models.TextField()
@@ -139,6 +181,7 @@ class tbProduto(models.Model):
     tipo = models.CharField(max_length=100, blank=True)
     preco_compra = models.DecimalField(max_digits=10, decimal_places=2)
     preco_venda = models.DecimalField(max_digits=10, decimal_places=2)
+    estoque = models.PositiveIntegerField(default=0)
     especificacoes = models.ManyToManyField(
         'tbFoto', 
         through='tbEspecifica', 
@@ -174,7 +217,7 @@ class tbFoto(models.Model):
 class tbEspecifica(models.Model):
     produto = models.ForeignKey(tbProduto, on_delete=models.CASCADE)
     foto = models.ForeignKey(tbFoto, on_delete=models.CASCADE)
-    # descricao = models.CharField(max_length=255, blank=True)
+    descricao = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         unique_together = ('produto', 'foto')

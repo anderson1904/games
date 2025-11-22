@@ -1,0 +1,15 @@
+{% extends 'Clash/base.html' %}
+
+{% block content %}
+<div class="form-box">
+    <h2>Confirmar Exclusão</h2>
+    <p>Tem certeza que deseja apagar o produto <strong>{{ object.nome }}</strong>?</p>
+    <p style="color: red;">Isso apagará também todas as fotos e especificações associadas.</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <a href="{% url 'produto_list' %}" class="btn-custom" style="background-color: grey; width: auto;">Cancelar</a>
+        <button type="submit" class="btn-custom" style="background-color: #dc3545; width: auto;">Sim, Deletar</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends 'Clash/base.html' %}
+
+{% block content %}
+<div class="form-box" style="max-width: 800px;">
+    <h2>{% if object %}Editar{% else %}Cadastrar{% endif %} Produto</h2>
+    <hr>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <h3 style="color: violet;">Dados Gerais</h3>
+        {{ form.as_p }}
+        
+        <hr>
+
+        <h3 style="color: violet;">Galeria de Imagens</h3>
+        
+        {{ fotos.management_form }}
+        
+        <div id="fotos-container">
+            {% for form in fotos %}
+                <div class="foto-item form-row" style="border: 1px solid #444; padding: 10px; margin-bottom: 10px; border-radius: 5px; background-color: #331540;">
+                    {{ form.as_p }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" id="add-foto-btn" class="btn-custom" style="background-color: green; margin-bottom: 20px; width: auto;">
+            + 
+        </button>
+
+        <hr>
+
+        <h3 style="color: violet;">Especificações</h3>
+        {{ specs.management_form }}
+        <div id="specs-container">
+            {% for form in specs %}
+                <div class="spec-item form-row" style="border: 1px solid #444; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
+                    {{ form.as_p }}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <button type="button" id="add-spec-btn" class="btn-custom" style="background-color: green; margin-bottom: 20px; width: auto;">
+            +
+        </button>
+
+        <hr>
+        <button type="submit" class="btn-custom" style="background-color: violet;">Salvar Produto Completo</button>
+    </form>
+</div>
+
+<div id="empty-foto-form" style="display:none;">
+    <div class="foto-item form-row" style="border: 1px solid #444; padding: 10px; margin-bottom: 10px; border-radius: 5px; background-color: #331540;">
+        {{ fotos.empty_form.as_p }}
+    </div>
+</div>
+
+<div id="empty-spec-form" style="display:none;">
+    <div class="spec-item form-row" style="border: 1px solid #444; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
+        {{ specs.empty_form.as_p }}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Função genérica para adicionar formulários
+        function addForm(btnId, containerId, emptyFormId, prefix) {
+            const btn = document.getElementById(btnId);
+            const container = document.getElementById(containerId);
+            const emptyFormHtml = document.getElementById(emptyFormId).innerHTML;
+            const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+
+            btn.addEventListener('click', function() {
+                // 1. Pega o número total de forms atuais
+                const formCount = parseInt(totalFormsInput.value);
+                
+                // 2. Cria o novo HTML substituindo __prefix__ pelo número atual
+                // Ex: fotos-__prefix__-foto vira fotos-3-foto
+                const newFormHtml = emptyFormHtml.replace(/__prefix__/g, formCount);
+                
+                // 3. Adiciona no container
+                const newDiv = document.createElement('div');
+                newDiv.innerHTML = newFormHtml;
+                container.appendChild(newDiv.firstElementChild);
+                
+                // 4. Atualiza o contador total para o Django saber que tem mais um
+                totalFormsInput.value = formCount + 1;
+            });
+        }
+
+        // Ativa para Fotos (prefixo deve ser o related_name ou nome do formset)
+        // Verifique no seu HTML gerado se o id é id_Foto-TOTAL_FORMS ou id_fotos-TOTAL_FORMS
+        // Baseado no seu models, se related_name='Foto', o prefixo padrão costuma ser 'Foto'
+        // Mas no views.py definimos o context como 'fotos'.
+        
+        // IMPORTANTE: Verifique o prefixo inspecionando o elemento hidden no navegador.
+        // Vou assumir que o prefixo padrão do inlineformset é o nome do model filho em minúsculo ou related_name.
+        // Se seu related_name é 'Foto', tente 'Foto'. Se não definiu prefix na view, o Django usa o nome da classe.
+        
+        // Vamos tentar pegar dinamicamente
+        const fotoTotal = document.querySelector('input[name$="-TOTAL_FORMS"][name^="Foto"]');
+        const fotoPrefix = fotoTotal ? fotoTotal.name.split('-')[0] : 'Foto';
+
+        const specTotal = document.querySelector('input[name$="-TOTAL_FORMS"][name^="tbEspecifica"]'); 
+        // Ou o nome que o Django deu para specs.
+        // Dica: Se não funcionar, inspecione o elemento e veja o 'name' do input hidden TOTAL_FORMS.
+        
+        // CONFIGURAÇÃO MANUAL (Ajuste conforme o 'name' que aparecer no seu HTML)
+        // Provavelmente será 'Foto' (por causa do related_name) e 'tbespecifica_set' (padrão)
+        
+        addForm('add-foto-btn', 'fotos-container', 'empty-foto-form', 'Foto'); 
+        addForm('add-spec-btn', 'specs-container', 'empty-spec-form', 'tbespecifica_set');
+    });
+</script>
+
+{% endblock %}

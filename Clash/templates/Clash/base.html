@@ -18,7 +18,7 @@
     
     <header>
         <div class="logo">
-            <img src="C:\Users\salda\OneDrive\Documentos\logo_royal_elixir.jpg" alt="logo da equipe">
+            <img src="{% static "imgs\logo_royal_elixir.jpg" %}" alt="logo da equipe">
             <h1>Royal Elixir</h1>
         </div>
         <nav>
@@ -27,7 +27,7 @@
                 {% else %}
                 <img src={{ user.Foto_Perfil.url }} alt="Ícone de usuário" style="height:30px; width:30px; border-radius:50%; vertical-align:middle; margin-right:8px;">
                 {% endif %}
-                <span>Bem-vindo, {{ user.username }}!</span>
+                <span>{{ user.username }}!</span>
                 <form method="post" action="{% url 'logout' %}">
                     {% csrf_token %} <button type="submit" class="btn btn-link nav-link">Sair</button>
                 </form>
@@ -37,7 +37,6 @@
             {% endif %}
             <a href="#sobre">Sobre</a>
             <a href="#loja">Loja</a>
-            <a href="#login">Login</a>
             <a href="#noticias">Notícias</a>
             {% block extra-nav-header %}
             {% endblock %}
@@ -66,34 +65,28 @@
 
 
             <div class="players-info">
+                {% for jogador in jogadores %}
                 <div class="player-card">
-                    <img src="C:\Users\salda\OneDrive\Documentos\jogador1.jpg" alt="Foto do jogador Nicolly">
+                    {% if jogador.Foto_Jogador %}
+                        <img src="{{ jogador.Foto_Jogador.url }}" alt="Foto de {{ jogador.Nickname }}">
+                    {% else %}
+                        {% load static %}
+                        <img src="{% static 'Clash/imgs/default_player.png' %}" alt="Sem foto">
+                    {% endif %}
+                    
                     <div>
-                        <h4>Nicolly</h4>
-                        <p>Idade: 18</p>
-                        <p>Carta preferida: Valquiria</p>
-                    </div>
+                        <h4>{{ jogador.Nickname }}</h4> {% if jogador.idade %}
+                            <p>Idade: {{ jogador.idade }}</p>
+                        {% else %}
+                            <p>Idade: N/D</p>
+                        {% endif %}
+                        <p>Troféus: {{ jogador.trofeus }}</p>
+                        </div>
                 </div>
 
-
-                <div class="player-card">
-                    <img src="C:\Users\salda\OneDrive\Documentos\jogador2.jpg" alt="Foto do jogador Ana Luiza">
-                    <div>
-                        <h4>Ana Luiza</h4>
-                        <p>Idade: 17</p>
-                        <p>Carta preferida: Princesa</p>
-                    </div>
-                </div>
-
-
-                <div class="player-card">
-                    <img src="C:\Users\salda\OneDrive\Documentos\jogador3.jpg" alt="Foto do jogador Anderson">
-                    <div>
-                        <h4>Anderson</h4>
-                        <p>Idade: 18</p>
-                        <p>Carta preferida: Golem</p>
-                    </div>
-                </div>
+            {% empty %}
+                <p>Nenhum jogador cadastrado na equipe ainda.</p>
+            {% endfor %}
             </div>
         </div>
     </section>

@@ -1,7 +1,16 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import * 
-# Importa todos os models (se eu já vou usar vários, pra que importar um por um?)
+# Importando explicitamente para evitar erros com formsets
+from .models import (
+    tbUser, tbCartao, tbJogador, tbPartida, 
+    tbStream, tbNoticia, tbProduto, tbFoto, 
+    tbEspecifica, tbCompra
+)
+
+# _____________________________________________
+# |                                           |
+# |  Formulários de Usuários e Autenticação   |
+# |___________________________________________|
 
 class CustomUserCreationForm(UserCreationForm): # formulário para criar um novo usuário
     
@@ -15,12 +24,11 @@ class CustomUserCreationForm(UserCreationForm): # formulário para criar um novo
     class Meta(UserCreationForm.Meta):
         model = tbUser
         # todos os campos que devem aparecer no formulário
-        # é subclasse de UserCreationForm, já inclui dados de usuário padrão no django
         fields = UserCreationForm.Meta.fields + (
             'email',
             'Data_Nascimento',
             'Foto_Perfil',
-        )# sendo necessário apenas acrecentar os campos extras do tbUser
+        )
 
 # Formulário baseado em ModelForm para o usuário editar o próprio perfil.
 class CustomUserChangeForm(forms.ModelForm):
@@ -30,7 +38,6 @@ class CustomUserChangeForm(forms.ModelForm):
 
         # Campos do formulário que poderão ser alterados pelo usuário.
         fields = (
-            "username",
             'first_name',
             'last_name',
             'email',
@@ -40,14 +47,12 @@ class CustomUserChangeForm(forms.ModelForm):
 
         # Define widgets personalizados para os campos.
         widgets = {
-            # Exibe um seletor de data moderno no navegador.
             'Data_Nascimento': forms.DateInput(attrs={'type': 'date'}),
         }
 
 class CartaoForm(forms.ModelForm):
     """
     Formulário para adicionar ou editar um cartão de crédito.
-    (Nota: Seu modelo tbCartao precisa de um ForeignKey para tbUser!)
     """
     class Meta:
         model = tbCartao
@@ -56,17 +61,13 @@ class CartaoForm(forms.ModelForm):
             'Numero_Cartao',
             'Nome_Cartao',
         )
-        # Em um projeto real, você adicionaria widgets para formatar
-        # a entrada do número do cartão e adicionar validação.
-
 
 class JogadorForm(forms.ModelForm):
     """
-    Formulário para criar ou editar um Jogador (provavelmente no admin).
+    Formulário para criar ou editar um Jogador.
     """
     class Meta:
         model = tbJogador
-        # Note que não incluímos 'idade', pois é uma @property calculada.
         fields = (
             'Nome',
             'Nickname',
@@ -82,15 +83,10 @@ class JogadorForm(forms.ModelForm):
 
 # _____________________________________________
 # |                                           |
-# |    Formulários de Conteúdo e Entretenimento   |
+# |  Formulários de Conteúdo e Entretenimento |
 # |___________________________________________|
 
 class PartidaForm(forms.ModelForm):
-    """
-    Formulário para agendar/editar uma Partida.
-    (Nota: Seria melhor refatorar tbJogador_Partida para um ManyToManyField
-    em tbPartida, o que simplificaria este formulário).
-    """
     class Meta:
         model = tbPartida
         fields = (
@@ -103,11 +99,6 @@ class PartidaForm(forms.ModelForm):
         }
 
 class StreamForm(forms.ModelForm):
-    """
-    Formulário para adicionar um link de stream a uma partida.
-    Isso seria PERFEITO para usar como um inline_formset_factory
-    na página de detalhes da Partida.
-    """
     class Meta:
         model = tbStream
         fields = (
@@ -120,21 +111,33 @@ class StreamForm(forms.ModelForm):
         }
 
 class NoticiaForm(forms.ModelForm):
-    """
-    Formulário principal para criar ou editar uma Notícia.
-    """
     class Meta:
         model = tbNoticia
-        fields = (
-            'Titulo',
-            'TextoHTML',
-            'Partida',
-        )
-        # O campo 'Partida' será um Dropdown.
-        # 'TextoHTML' será um Textarea por padrão.
-        # O modelo 'tbEdita' seria preenchido programaticamente na view,
-        # associando o request.user ao salvar.
+        fields = ('Titulo', 'TextoHTML')
+        # Removemos 'Partida' daqui, pois vamos criá-la manualmente
 
+class PartidaOpcionalForm(forms.ModelForm):
+    class Meta:
+        model = tbPartida
+        fields = ('Data_Prevista', 'Time_Adversario', 'Modalidade')
+        widgets = {
+            'Data_Prevista': forms.DateTimeInput(attrs={'type': 'datetime-local'})
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.required = False
+
+class StreamOpcionalForm(forms.ModelForm):
+    class Meta:
+        model = tbStream
+        fields = ('tipo', 'embed')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.required = False
 
 # _____________________________________________
 # |                                           |
@@ -142,32 +145,46 @@ class NoticiaForm(forms.ModelForm):
 # |___________________________________________|
 
 class ProdutoForm(forms.ModelForm):
-    """
-    Formulário para um admin adicionar ou editar um Produto.
-    """
     class Meta:
         model = tbProduto
-        fields = (
-            'nome',
-            'tipo',
-            'preco_compra',
-            'preco_venda',
-            'especificacoes',
-        )
-        # 'especificacoes' (M2M) aparecerá como uma caixa de seleção múltipla.
-        # As 'tbFotos' seriam gerenciadas com um inline_formset_factory na view,
-        # usando o formulário 'FotoForm' abaixo.
+        fields = ('nome', 'tipo', 'preco_compra', 'preco_venda')
 
-"""
-class FotoForm(forms.ModelForm):
-    ""
-    Formulário para a 'tbFoto'. Quase nunca usado sozinho,
-    mas sim com um inline_formset_factory na view de 'Produto'.
-    ""
+# --- FORMULÁRIO CUSTOMIZADO PARA FOTO + ESPECIFICAÇÃO ---
+
+class FotoComSpecForm(forms.ModelForm):
+    """
+    Formulário híbrido: Salva a foto na tbFoto, mas tem um campo extra
+    'spec_descricao' que a View usará para criar a tbEspecifica se preenchido.
+    """
+    # Campo virtual (não existe na tbFoto)
+    spec_descricao = forms.CharField(
+        label="É uma especificação? (Ex: Cor Azul)",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Deixe vazio se for apenas uma foto comum',
+            'class': 'form-control' # Opcional, para estilização
+        })
+    )
+
     class Meta:
         model = tbFoto
-        fields = ('foto')
-"""
+        fields = ('foto',)
+
+# --- FORMSETS ---
+
+# Formset Principal atualizado para usar o formulário híbrido
+FotoProdutoFormSet = forms.inlineformset_factory(
+    tbProduto,      # Pai
+    tbFoto,         # Filho
+    form=FotoComSpecForm, # <--- USAMOS O FORMULÁRIO CUSTOMIZADO AQUI
+    fields=('foto',), # Campos do model tbFoto
+    extra=1,        # Quantos campos vazios aparecem inicialmente
+    can_delete=True # Permite deletar fotos existentes
+)
+
+# O EspecificaFormSet antigo foi removido pois agora a especificação
+# é criada através do campo 'spec_descricao' dentro do FotoProdutoFormSet.
+
 """
 class ItemCarrinhoUpdateForm(forms.ModelForm):
     ""

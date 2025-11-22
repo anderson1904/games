@@ -1,22 +1,67 @@
-{% extends 'Clash/base.html' %} {% block content %}
-<div class="container">
-    <h1>{{ noticia.Titulo }}</h1>
-    
-    {% if noticia.Partida %}
-    <div class="alert alert-info">
-        <strong>Partida Relacionada:</strong> {{ noticia.Partida.Time_Adversario }}
-        <br>
-        <strong>Data:</strong> {{ noticia.Partida.Data_Prevista|date:"d/m/Y H:i" }}
+{% extends 'Clash/base.html' %}
+
+{% block content %}
+<section>
+    <div class="form-box" style="max-width: 800px;"> <h2>{{ noticia.Titulo }}</h2>
+        <p style="color: violet; font-size: 0.9rem; text-align: right;">
+            Publicado em: {{ noticia.tbedita_set.first.Data_Edicao|date:"d/m/Y"|default:"Data desconhecida" }}
+        </p>
+        <hr>
+
+        <div class="noticia-texto" style="margin-bottom: 30px; font-size: 1.1rem; line-height: 1.6;">
+            {{ noticia.TextoHTML|safe }}
+        </div>
+
+        {% if noticia.Partida %}
+            <div class="partida-highlight">
+                <h3 style="color: rgb(252, 255, 203); text-align: center;">⚔️ Detalhes do Confronto ⚔️</h3>
+                
+                <div class="partida-info-grid">
+                    <div>
+                        <strong>Adversário:</strong><br>
+                        <span style="font-size: 1.2rem; color: violet;">{{ noticia.Partida.Time_Adversario }}</span>
+                    </div>
+                    <div>
+                        <strong>Data e Hora:</strong><br>
+                        <span>{{ noticia.Partida.Data_Prevista|date:"d/m/Y às H:i" }}</span>
+                    </div>
+                    <div>
+                        <strong>Modalidade:</strong><br>
+                        <span>{{ noticia.Partida.Modalidade }}</span>
+                    </div>
+                </div>
+
+                {% if noticia.Partida.transmissoes.all %}
+                    <hr style="border-color: violet; margin: 20px 0;">
+                    <h4 style="text-align: center; margin-bottom: 15px;">🔴 Assista Ao Vivo</h4>
+                    
+                    {% for stream in noticia.Partida.transmissoes.all %}
+                        <div class="stream-container">
+                            <p style="text-align: center; margin-bottom: 5px;">
+                                Transmissão via <strong>{{ stream.tipo }}</strong>:
+                            </p>
+                            <div class="video-wrapper">
+                                {{ stream.embed|safe }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <hr>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="{% url 'noticia_list' %}" class="btn-custom" style="width: auto; text-decoration: none; padding: 10px 20px;">Voltar</a>
+            
+            {% if user.is_authenticated and user.is_admin %}
+                <div style="display: flex; gap: 10px;">
+                    <a href="{% url 'noticia_update' noticia.pk %}" class="btn-custom" style="background-color: #9e0778ff; color: black; width: auto; text-decoration: none;">Editar</a>
+                    <a href="{% url 'noticia_delete' noticia.pk %}" class="btn-custom" style="background-color: #b80012ff; color: white; width: auto; text-decoration: none;">Deletar</a>
+                </div>
+            {% endif %}
+        </div>
+
     </div>
-    {% endif %}
-    
-    <hr>
-    
-    <div class="noticia-conteudo">
-        {{ noticia.TextoHTML|safe }}
-    </div>
-    
-    <hr>
-    <a href="{% url 'noticia_list' %}" class="btn btn-outline-secondary">Voltar para Notícias</a>
-</div>
+</section>
 {% endblock %}

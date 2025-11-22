@@ -4,8 +4,6 @@ body {
     background-color: rgb(53, 22, 65);
     color: white;
 }
-
-
 header {
     background-color: #2c1038;
     display: flex;
@@ -16,31 +14,26 @@ header {
     top: 0;
     z-index: 1000;
 }
-
 .logo {
     display: flex;
     align-items: center;
     gap: 15px;
 }
-
 .logo img {
     height: 60px;
     width: 60px;
     border-radius: 50%;
     box-shadow: 0 0 8px rgba(0,0,0,0.5);
 }
-
 .logo h1 {
     font-size: 28px;
     margin: 0;
     color: rgb(252, 255, 203);
 }
-
 nav {
     display: flex;
     gap: 25px;
 }
-
 nav a {
     color: rgb(252, 255, 203);
     text-decoration: none;
@@ -213,7 +206,8 @@ p {
 .form-box input[type="email"],
 .form-box input[type="password"],
 .form-box input[type="date"],
-.form-box input[type="file"]{
+.form-box input[type="file"],
+.form-box input[type="number"] {
     width: 100%; 
     padding: 12px;
     margin-top: 5px;
