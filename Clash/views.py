@@ -12,13 +12,22 @@ from django.views.generic import (
 from datetime import datetime as dt
 from django.urls import reverse_lazy
 from .forms import *
+from .carrinho import add_to_cart
+
+# Clash/views.py
+
+from django.shortcuts import render
+from .models import tbJogador, tbProduto, tbNoticia
 
 def home(request):
-    # listas de objetos para exibir na página inicial
     lista_jogadores = tbJogador.objects.all()
-    # o nome que aparecerá no template de acordo com a lista
+    lista_produtos = tbProduto.objects.all()
+    lista_noticias = tbNoticia.objects.all().order_by('-id')[:3]
+    
     contexto = {
-        'jogadores': lista_jogadores
+        'jogadores': lista_jogadores,
+        'produtos': lista_produtos,
+        'noticias': lista_noticias,
     }
     return render(request, 'Clash/base.html', contexto)
 
@@ -142,6 +151,10 @@ class NoticiaUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'Clash/noticia_form.html'
     def get_queryset(self):
         queryset = super().get_queryset()
+        # Se for superusuário, pode editar qualquer uma
+        if self.request.user.is_superuser:
+            return queryset
+        # Senão, só as que ele editou/criou
         return queryset.filter(tbedita__tbUser=self.request.user)
 
     def form_valid(self, form):
@@ -172,10 +185,30 @@ class ProdutoListView(LoginRequiredMixin, ListView):
     context_object_name = 'produtos'
 
 # --- DETALHES DO PRODUTO ---
+# Clash/views.py
+
 class ProdutoDetailView(LoginRequiredMixin, DetailView):
     model = tbProduto
     template_name = 'Clash/produto_detail.html'
     context_object_name = 'produto'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Vamos agrupar as especificações por TIPO
+        # Estrutura final: {'Cor': [SpecAzul, SpecVermelha], 'Tamanho': [SpecG, SpecM]}
+        specs_agrupadas = {}
+        
+        for spec in self.object.tbespecifica_set.all():
+            nome_tipo = spec.tipo.nome if spec.tipo else "Outros"
+            
+            if nome_tipo not in specs_agrupadas:
+                specs_agrupadas[nome_tipo] = []
+            
+            specs_agrupadas[nome_tipo].append(spec)
+            
+        context['specs_agrupadas'] = specs_agrupadas
+        return context
 
 # --- CRIAR PRODUTO (Complexo: Salva Produto + Fotos + Specs) ---
 class ProdutoCreateView(LoginRequiredMixin, CreateView):
@@ -288,8 +321,96 @@ class ProdutoUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('produto_detail', kwargs={'pk': self.object.pk})
+
 # --- DELETAR PRODUTO ---
 class ProdutoDeleteView(LoginRequiredMixin, DeleteView):
     model = tbProduto
     template_name = 'Clash/produto_confirm_delete.html'
     success_url = reverse_lazy('produto_list')
+
+# --- VER CARRINHO DE COMPRAS ---
+class CarrinhoView(LoginRequiredMixin, DetailView):
+    model = tbCarrinho
+    template_name = 'Clash/carrinho.html'
+    context_object_name = 'carrinho'
+    def get_object(self):
+        # Pega o carrinho do usuário logado. Se não tiver, cria.
+        carrinho, created = tbCarrinho.objects.get_or_create(User=self.request.user)
+        return carrinho
+
+class PartidaListView(ListView):
+    model = tbPartida
+    template_name = 'Clash/partida_list.html'
+    context_object_name = 'partidas'
+    ordering = ['-Data_Prevista'] # Ordena pela data, mais recentes/futuras primeiro
+
+# --- DETALHES (Read) ---
+class PartidaDetailView(DetailView):
+    model = tbPartida
+    template_name = 'Clash/partida_detail.html'
+    context_object_name = 'partida'
+
+# --- CRIAR (Create) ---
+class PartidaCreateView(LoginRequiredMixin, CreateView):
+    model = tbPartida
+    form_class = PartidaForm
+    template_name = 'Clash/partida_form.html'
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        if self.request.POST:
+            data['streams'] = StreamFormSet(self.request.POST)
+        else:
+            data['streams'] = StreamFormSet()
+        return data
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        streams = context['streams']
+        
+        with transaction.atomic():
+            self.object = form.save() # Salva a partida
+            
+            if streams.is_valid():
+                streams.instance = self.object # Liga as streams à partida criada
+                streams.save()
+                
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        return reverse_lazy('partida_detail', kwargs={'pk': self.object.pk})
+
+# --- EDITAR (Update) ---
+class PartidaUpdateView(LoginRequiredMixin, UpdateView):
+    model = tbPartida
+    form_class = PartidaForm
+    template_name = 'Clash/partida_form.html' # Reutiliza o template
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        if self.request.POST:
+            data['streams'] = StreamFormSet(self.request.POST, instance=self.object)
+        else:
+            data['streams'] = StreamFormSet(instance=self.object)
+        return data
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        streams = context['streams']
+        
+        with transaction.atomic():
+            self.object = form.save() # Salva as alterações da partida
+            
+            if streams.is_valid():
+                streams.save() # Salva/Deleta as streams
+                
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('partida_detail', kwargs={'pk': self.object.pk})
+
+# --- DELETAR (Delete) ---
+class PartidaDeleteView(LoginRequiredMixin, DeleteView):
+    model = tbPartida
+    template_name = 'Clash/partida_confirm_delete.html'
+    success_url = reverse_lazy('partida_list')

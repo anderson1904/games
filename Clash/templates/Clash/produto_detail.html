@@ -1,45 +1,31 @@
-{% extends 'Clash/base.html' %}
-
-{% block content %}
-<section>
-    <div class="form-box" style="max-width: 900px;">
-        <div style="display:flex; justify-content:space-between;">
-            <h2>{{ produto.nome }}</h2>
-            <h3>R$ {{ produto.preco_venda }}</h3>
-        </div>
-        <p><strong>Tipo:</strong> {{ produto.tipo }}</p>
+<form action="{% url 'add_to_cart' produto.pk %}" method="post">
+    {% csrf_token %}
+    
+    {% if specs_agrupadas %}
         <hr>
+        {% for tipo, lista_specs in specs_agrupadas.items %}
+            
+            <h4 style="color: violet;">Escolha {{ tipo }}:</h4>
+            
+            <div class="specs-selection" style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
+                {% for spec in lista_specs %}
+                    <label style="cursor: pointer; border: 1px solid #555; padding: 10px; border-radius: 8px; background: #2c1038;">
+                        <input type="radio" name="especificacao" value="{{ spec.pk }}" required>
+                        
+                        <span style="color: white; font-weight: bold;">{{ spec.descricao }}</span>
+                        
+                        {% if spec.foto %}
+                            <br>
+                            <img src="{{ spec.foto.foto.url }}" style="width: 40px; height: 40px; object-fit: cover; margin-top: 5px; border-radius: 4px;">
+                        {% endif %}
+                    </label>
+                {% endfor %}
+            </div>
+            
+        {% endfor %}
+    {% endif %}
 
-        <h3 style="color: violet;">Galeria</h3>
-        <div class="store" style="justify-content: flex-start;">
-            {% for foto in produto.Foto.all %} <div style="width: 150px; height: 150px;">
-                    <img src="{{ foto.foto.url }}" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
-                </div>
-            {% empty %}
-                <p>Sem fotos.</p>
-            {% endfor %}
-        </div>
-
-        <hr>
-
-        <h3 style="color: violet;">Especificações Disponíveis</h3>
-        <ul>
-            {% for spec in produto.tbEspecifica_set.all %}
-                <li style="color: white; font-size: 18px;">
-                    Especificação ID: {{ spec.id }} 
-                    {% if spec.foto %}
-                        - <a href="{{ spec.foto.foto.url }}" style="color: violet;">Ver foto vinculada</a>
-                    {% endif %}
-                </li>
-            {% empty %}
-                <li>Nenhuma especificação cadastrada.</li>
-            {% endfor %}
-        </ul>
-
-        <div style="margin-top: 30px;">
-            <a href="{% url 'produto_list' %}" class="btn-custom" style="width: auto;">Voltar</a>
-            <a href="{% url 'produto_update' produto.pk %}" class="btn-custom" style="background-color: #ffc107; color: black; width: auto;">Editar</a>
-        </div>
-    </div>
-</section>
-{% endblock %}
+    <button type="submit" class="btn-custom" style="background-color: green;">
+        Comprar - R$ {{ produto.preco_venda }}
+    </button>
+</form>

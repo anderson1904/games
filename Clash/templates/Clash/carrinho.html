@@ -1,0 +1,48 @@
+{% extends 'Clash/base.html' %}
+
+{% block content %}
+<div class="form-box" style="max-width: 1000px;">
+    <h2>Meu Carrinho</h2>
+    <hr>
+
+    {% if carrinho.itens.exists %}
+        <table style="width: 100%; color: white; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 1px solid violet; text-align: left;">
+                    <th style="padding: 10px;">Produto</th>
+                    <th style="padding: 10px;">Versão</th> <th style="padding: 10px;">Qtd</th>
+                    <th style="padding: 10px;">Preço</th>
+                    <th style="padding: 10px;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in carrinho.itens.all %}
+                <tr style="border-bottom: 1px solid #444;">
+                    <td style="padding: 10px; font-weight: bold;">{{ item.produto.nome }}</td>
+                    
+                    <td style="padding: 10px; color: violet;">
+                        {% if item.especificacao %}
+                            {{ item.especificacao.descricao }}
+                            {% if item.especificacao.foto %}
+                                <img src="{{ item.especificacao.foto.foto.url }}" style="width:30px; vertical-align: middle; border-radius: 50%;">
+                            {% endif %}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    
+                    <td style="padding: 10px;">{{ item.quantidade }}</td>
+                    <td style="padding: 10px;">R$ {{ item.valor_compra }}</td>
+                    <td style="padding: 10px;">R$ {{ item.valor_total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <button class="btn-custom">Finalizar Compra</button>
+    {% else %}
+        <p style="text-align: center;">Seu carrinho está vazio.</p>
+        <a href="{% url 'produto_list' %}" class="btn-custom" style="text-align: center; display: block; width: 200px; margin: 20px auto;">Ir para Loja</a>
+    {% endif %}
+</div>
+{% endblock %}

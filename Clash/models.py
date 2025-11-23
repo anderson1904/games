@@ -165,8 +165,6 @@ class tbEdita(models.Model):
     tbUser = models.ForeignKey(tbUser, on_delete=models.CASCADE)
     tbNoticia = models.ForeignKey('tbNoticia', on_delete=models.CASCADE)
 
-
-
 #relativos a compras e vendas
 class tbCarrinho(models.Model):
     User = models.ForeignKey(tbUser, on_delete=models.CASCADE)
@@ -187,11 +185,9 @@ class tbProduto(models.Model):
         through='tbEspecifica', 
         related_name='produtos_especificados',
     )
-
     class Meta:
         verbose_name = "Produto"
         verbose_name_plural = "Produtos"
-
     def __str__(self):
         return self.nome
 
@@ -206,27 +202,29 @@ class tbFoto(models.Model):
         null=True,
         blank=True,
     )
-
     class Meta:
         verbose_name = "Foto"
         verbose_name_plural = "Fotos"
-
     def __str__(self):
         return f"Foto de {self.produto.nome}"
+
+class tbTipoEspecificacao(models.Model):
+    nome = models.CharField(max_length=50) # Ex: "Cor", "Tamanho"
+    def __str__(self):
+        return self.nome
 
 class tbEspecifica(models.Model):
     produto = models.ForeignKey(tbProduto, on_delete=models.CASCADE)
     foto = models.ForeignKey(tbFoto, on_delete=models.CASCADE)
+    tipo = models.ForeignKey(tbTipoEspecificacao, on_delete=models.CASCADE, null=True)
     descricao = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         unique_together = ('produto', 'foto')
         verbose_name = "Especificação"
         verbose_name_plural = "Especificações"
-
     def __str__(self):
         return f"Especificação de {self.produto.nome} com a foto ID {self.foto.id}"
-
 
 class tbCompra(models.Model):
     carrinho = models.ForeignKey(
@@ -238,6 +236,12 @@ class tbCompra(models.Model):
         tbProduto, 
         on_delete=models.CASCADE,
     )
+    especificacao = models.ForeignKey(
+        tbEspecifica, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True
+    )
     quantidade = models.PositiveIntegerField(default=1)
     valor_compra = models.DecimalField(max_digits=10, decimal_places=2) 
     frete = models.DecimalField(
@@ -248,10 +252,8 @@ class tbCompra(models.Model):
     @property
     def valor_total(self):
         return (self.valor_compra * self.quantidade) + self.frete
-
     class Meta:
         verbose_name = "Item de Compra"
         verbose_name_plural = "Itens de Compra"
-
     def __str__(self):
         return f"{self.quantidade}x {self.produto.nome} no Carrinho {self.carrinho.id}"

@@ -1,0 +1,42 @@
+{% extends 'Clash/base.html' %}
+
+{% block content %}
+<section>
+    <div class="form-box" style="max-width: 800px;">
+        <h2 style="color: rgb(252, 255, 203);">Royal Elixir <span style="color:violet;">VS</span> {{ partida.Time_Adversario }}</h2>
+        <p style="text-align: center;">{{ partida.Data_Prevista|date:"d/m/Y às H:i" }}</p>
+        <hr>
+
+        <div style="text-align: center; margin-bottom: 30px;">
+            <p><strong>Modalidade:</strong> {{ partida.Modalidade }}</p>
+        </div>
+
+        {% if partida.transmissoes.all %}
+            <h3 style="color: violet; text-align: center;">Assista Ao Vivo</h3>
+            {% for stream in partida.transmissoes.all %}
+                <div style="margin-bottom: 20px; text-align: center;">
+                    <p>Canal: <strong>{{ stream.tipo }}</strong></p>
+                    <div class="video-wrapper">
+                        {{ stream.embed|safe }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; color: gray;">Nenhuma transmissão cadastrada para este jogo.</p>
+        {% endif %}
+
+        <hr>
+        
+        <div style="display: flex; justify-content: space-between;">
+            <a href="{% url 'partida_list' %}" class="btn-custom" style="width: auto;">Voltar</a>
+            
+            {% if user.is_authenticated %}
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'partida_update' partida.pk %}" class="btn-custom" style="background-color: #ffc107; color: black; width: auto;">Editar</a>
+                <a href="{% url 'partida_delete' partida.pk %}" class="btn-custom" style="background-color: #dc3545; width: auto;">Deletar</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

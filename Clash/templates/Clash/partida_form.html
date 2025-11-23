@@ -1,0 +1,32 @@
+{% extends 'Clash/base.html' %}
+
+{% block content %}
+<div class="form-box" style="max-width: 800px;">
+    <h2>{% if object %}Editar{% else %}Agendar{% endif %} Partida</h2>
+    <hr>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <h3 style="color: violet;">Dados do Confronto</h3>
+        {{ form.as_p }}
+        
+        <hr>
+
+        <h3 style="color: violet;">Links de Transmissão (Opcional)</h3>
+        <p style="font-size: 0.9rem; color: #ccc;">Cole o iframe ou link da Twitch/Youtube aqui.</p>
+        
+        {{ streams.management_form }}
+        
+        <div id="streams-container">
+            {% for stream_form in streams %}
+                <div class="stream-item" style="border: 1px solid #444; padding: 15px; margin-bottom: 15px; border-radius: 8px; background-color: #331540;">
+                    {{ stream_form.as_p }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn-custom">Salvar Partida</button>
+    </form>
+</div>
+{% endblock %}

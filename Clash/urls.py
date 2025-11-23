@@ -24,4 +24,13 @@ urlpatterns = [
     path('produtos/<int:pk>/', ProdutoDetailView.as_view(), name='produto_detail'),
     path('produtos/<int:pk>/editar/', ProdutoUpdateView.as_view(), name='produto_update'),
     path('produtos/<int:pk>/deletar/', ProdutoDeleteView.as_view(), name='produto_delete'),
+    # Urls do carrinho de compras
+    path('carrinho/adicionar/<int:pk>/', add_to_cart, name='add_to_cart'),
+    path('carrinho/', CarrinhoView.as_view(), name='ver_carrinho'),
+    # urls de CRUD DE PARTIDAS
+    path('partidas/', PartidaListView.as_view(), name='partida_list'),
+    path('partidas/nova/', PartidaCreateView.as_view(), name='partida_create'),
+    path('partidas/<int:pk>/', PartidaDetailView.as_view(), name='partida_detail'),
+    path('partidas/<int:pk>/editar/', PartidaUpdateView.as_view(), name='partida_update'),
+    path('partidas/<int:pk>/deletar/', PartidaDeleteView.as_view(), name='partida_delete'),
 ]

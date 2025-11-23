@@ -1,0 +1,15 @@
+{% extends 'Clash/base.html' %}
+
+{% block content %}
+<div class="form-box">
+    <h2>Confirmar Exclusão</h2>
+    <p>Tem certeza que deseja deletar a partida contra <strong>{{ object.Time_Adversario }}</strong>?</p>
+    <p style="color: red;">Isso também removerá os links de transmissão associados.</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <a href="{% url 'partida_detail' object.pk %}" class="btn-custom" style="background-color: grey; width: auto;">Cancelar</a>
+        <button type="submit" class="btn-custom" style="background-color: #dc3545; width: auto;">Sim, Deletar</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-# Importando explicitamente para evitar erros com formsets
+from django.forms import inlineformset_factory
 from .models import (
     tbUser, tbCartao, tbJogador, tbPartida, 
     tbStream, tbNoticia, tbProduto, tbFoto, 
@@ -89,15 +89,19 @@ class JogadorForm(forms.ModelForm):
 class PartidaForm(forms.ModelForm):
     class Meta:
         model = tbPartida
-        fields = (
-            'Data_Prevista',
-            'Time_Adversario',
-            'Modalidade'
-        )
+        fields = ('Data_Prevista', 'Time_Adversario', 'Modalidade')
         widgets = {
-            'Data_Prevista': forms.DateTimeInput(attrs={'type': 'datetime-local'})
+            'Data_Prevista': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
 
+# FormSet para as Streams (Filhos)
+StreamFormSet = inlineformset_factory(
+    tbPartida,       # Modelo Pai
+    tbStream,        # Modelo Filho
+    fields=('tipo', 'embed'),
+    extra=1,         # Quantos campos vazios aparecem (1 por padrão)
+    can_delete=True  # Permite deletar streams existentes
+)
 class StreamForm(forms.ModelForm):
     class Meta:
         model = tbStream
