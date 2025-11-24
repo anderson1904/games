@@ -10,39 +10,76 @@
             <thead>
                 <tr style="border-bottom: 1px solid violet; text-align: left;">
                     <th style="padding: 10px;">Produto</th>
-                    <th style="padding: 10px;">Versão</th> <th style="padding: 10px;">Qtd</th>
-                    <th style="padding: 10px;">Preço</th>
+                    <th style="padding: 10px;">Versão</th>
+                    <th style="padding: 10px; text-align: center;">Qtd</th>
+                    <th style="padding: 10px;">Preço Unit.</th>
                     <th style="padding: 10px;">Total</th>
-                </tr>
+                    <th style="padding: 10px;">Ações</th> </tr>
             </thead>
             <tbody>
                 {% for item in carrinho.itens.all %}
                 <tr style="border-bottom: 1px solid #444;">
-                    <td style="padding: 10px; font-weight: bold;">{{ item.produto.nome }}</td>
                     
-                    <td style="padding: 10px; color: violet;">
-                        {% if item.especificacao %}
-                            {{ item.especificacao.descricao }}
-                            {% if item.especificacao.foto %}
-                                <img src="{{ item.especificacao.foto.foto.url }}" style="width:30px; vertical-align: middle; border-radius: 50%;">
-                            {% endif %}
-                        {% else %}
-                            -
-                        {% endif %}
+                    <td style="padding: 10px; font-weight: bold;">
+                        {{ item.produto.nome }}
                     </td>
                     
-                    <td style="padding: 10px;">{{ item.quantidade }}</td>
+                    <td style="padding: 10px; color: violet; font-size: 0.9rem;">
+                        {% for spec in item.especificacoes.all %}
+                            <div style="margin-bottom: 5px;">
+                                • {{ spec.descricao }}
+                                {% if spec.foto %}
+                                    <img src="{{ spec.foto.foto.url }}" style="width:25px; vertical-align: middle; border-radius: 50%;">
+                                {% endif %}
+                            </div>
+                        {% empty %}
+                            <span style="color: #777;">Padrão</span>
+                        {% endfor %}
+                    </td>
+                    
+                    <td style="padding: 10px; text-align: center;">
+                        <form action="{% url 'atualizar_item' item.pk %}" method="post" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 0; background: transparent; border: none; box-shadow: none;">
+                            {% csrf_token %}
+                            <input type="number" name="quantidade" value="{{ item.quantidade }}" min="1" 
+                                   style="width: 60px; padding: 5px; text-align: center; margin: 0;">
+                            
+                            <button type="submit" title="Atualizar Quantidade" 
+                                    style="background: violet; border: none; color: white; border-radius: 5px; cursor: pointer; padding: 5px 10px;">
+                                ↻
+                            </button>
+                        </form>
+                    </td>
+                    
                     <td style="padding: 10px;">R$ {{ item.valor_compra }}</td>
                     <td style="padding: 10px;">R$ {{ item.valor_total }}</td>
+                    
+                    <td style="padding: 10px; text-align: center;">
+                        <form action="{% url 'remover_item' item.pk %}" method="post" style="padding: 0; background: transparent; border: none; box-shadow: none;">
+                            {% csrf_token %}
+                            <button type="submit" title="Remover Item" 
+                                    style="background: #dc3545; border: none; color: white; border-radius: 5px; cursor: pointer; padding: 5px 10px; font-weight: bold;">
+                                X
+                            </button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         
-        <button class="btn-custom">Finalizar Compra</button>
+        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 30px; gap: 20px;">
+            <button class="btn-custom" style="width: auto; background-color: green; padding: 10px 30px;">
+                Finalizar Compra
+            </button>
+        </div>
+
     {% else %}
-        <p style="text-align: center;">Seu carrinho está vazio.</p>
-        <a href="{% url 'produto_list' %}" class="btn-custom" style="text-align: center; display: block; width: 200px; margin: 20px auto;">Ir para Loja</a>
+        <div style="text-align: center; padding: 40px;">
+            <p style="font-size: 1.2rem; margin-bottom: 20px;">Seu carrinho está vazio.</p>
+            <a href="{% url 'produto_list' %}" class="btn-custom" style="text-align: center; display: inline-block; width: auto;">
+                Ir para a Loja
+            </a>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

@@ -156,18 +156,18 @@ class ProdutoForm(forms.ModelForm):
 # --- FORMULÁRIO CUSTOMIZADO PARA FOTO + ESPECIFICAÇÃO ---
 
 class FotoComSpecForm(forms.ModelForm):
-    """
-    Formulário híbrido: Salva a foto na tbFoto, mas tem um campo extra
-    'spec_descricao' que a View usará para criar a tbEspecifica se preenchido.
-    """
-    # Campo virtual (não existe na tbFoto)
+    # Campo 1: Descrição (Ex: Azul)
     spec_descricao = forms.CharField(
-        label="É uma especificação? (Ex: Cor Azul)",
+        label="Nome da Opção (Ex: Azul, GG)",
         required=False,
-        widget=forms.TextInput(attrs={
-            'placeholder': 'Deixe vazio se for apenas uma foto comum',
-            'class': 'form-control' # Opcional, para estilização
-        })
+        widget=forms.TextInput(attrs={'placeholder': 'Vazio se for foto comum', 'class': 'form-control'})
+    )
+
+    # Campo 2: Tipo (Ex: Cor) - NOVO!
+    spec_tipo = forms.CharField(
+        label="Tipo da Opção (Ex: Cor, Tamanho)",
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: Cor', 'class': 'form-control'})
     )
 
     class Meta:
@@ -178,28 +178,11 @@ class FotoComSpecForm(forms.ModelForm):
 
 # Formset Principal atualizado para usar o formulário híbrido
 FotoProdutoFormSet = forms.inlineformset_factory(
-    tbProduto,      # Pai
-    tbFoto,         # Filho
-    form=FotoComSpecForm, # <--- USAMOS O FORMULÁRIO CUSTOMIZADO AQUI
-    fields=('foto',), # Campos do model tbFoto
-    extra=1,        # Quantos campos vazios aparecem inicialmente
-    can_delete=True # Permite deletar fotos existentes
+    tbProduto,
+    tbFoto,
+    form=FotoComSpecForm,
+    fields=('foto',),
+    extra=1,
+    can_delete=True 
 )
 
-# O EspecificaFormSet antigo foi removido pois agora a especificação
-# é criada através do campo 'spec_descricao' dentro do FotoProdutoFormSet.
-
-"""
-class ItemCarrinhoUpdateForm(forms.ModelForm):
-    ""
-    Este formulário NÃO é para criar um item (isso é feito com um botão).
-    Este formulário é para ATUALIZAR a quantidade de um item
-    que JÁ ESTÁ no carrinho.
-    ""
-    class Meta:
-        model = tbCompra # O modelo é 'tbCompra'
-        fields = ('quantidade')
-        widgets = {
-            'quantidade': forms.NumberInput(attrs={'min': '1'})
-        }
-"""

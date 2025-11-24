@@ -236,12 +236,7 @@ class tbCompra(models.Model):
         tbProduto, 
         on_delete=models.CASCADE,
     )
-    especificacao = models.ForeignKey(
-        tbEspecifica, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True
-    )
+    especificacoes = models.ManyToManyField(tbEspecifica, blank=True)
     quantidade = models.PositiveIntegerField(default=1)
     valor_compra = models.DecimalField(max_digits=10, decimal_places=2) 
     frete = models.DecimalField(

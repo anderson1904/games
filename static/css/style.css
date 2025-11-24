@@ -1,53 +1,68 @@
-body {
+ body {
     margin: 0;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    background-color: rgb(53, 22, 65);
+    font-family: 'Inter', sans-serif; 
+    background: linear-gradient(180deg, #351641, #1e0a29);
     color: white;
+    min-height: 100vh;
 }
+
 header {
-    background-color: #2c1038;
+    background-color: linear-gradient(90deg, #351641);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 30px;
+    padding: 15px 40px;
     position: sticky;
     top: 0;
     z-index: 1000;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.6);
 }
+
 .logo {
     display: flex;
     align-items: center;
     gap: 15px;
 }
+
 .logo img {
-    height: 60px;
-    width: 60px;
+    height: 65px;
+    width: 65px;
     border-radius: 50%;
-    box-shadow: 0 0 8px rgba(0,0,0,0.5);
+    box-shadow: 0 0 12px rgba(255, 255, 200, 0.7);
+    border: 2px solid gold;
 }
+
 .logo h1 {
     font-size: 28px;
     margin: 0;
-    color: rgb(252, 255, 203);
+    color: gold;
+    text-shadow: 2px 2px 6px black;
 }
+
 nav {
     display: flex;
     gap: 25px;
 }
+
 nav a {
     color: rgb(252, 255, 203);
     text-decoration: none;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 8px;
     transition: 0.3s;
+
 }
 
 nav a:hover {
-    color: violet;
+    background: gold;
+    color: rgb(212, 105, 255);
 }
 
+
 section {
-    padding: 50px;
+    padding: 60px 40px;
     text-align: center;
 }
 
@@ -56,6 +71,22 @@ p {
     color: blueviolet;
     font-size: 22px;
     margin-top: 20px;
+}
+
+
+section h2 {
+    font-size: 32px;
+    margin-bottom: 15px;
+    color: gold;
+    text-shadow: 2px 2px 6px black;
+}
+
+section p {
+    font-size: 20px;
+    color: violet;
+    max-width: 800px;
+    margin: 0 auto 30px auto;
+    text-align: center;
 }
 
 
@@ -68,21 +99,29 @@ p {
 
 .item {
     background: #2c1038;
-    border-radius: 15px;
+    border-radius: 18px;
     padding: 20px;
-    width: 250px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    width: 280px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.8);
 }
 
 .carousel {
     position: relative;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: 12px;
+    margin-bottom: 15px;
 }
 
 .carousel img {
     width: 100%;
     display: none;
+    border-radius: 12px;
 }
 
 .carousel img.active {
@@ -93,15 +132,22 @@ p {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.6);
     border: none;
     color: white;
-    padding: 8px;
+    padding: 8px 12px;
     cursor: pointer;
+    border-radius: 50%;
+    transition: 0.3s;
 }
 
-.carousel .prev { left: 5px; }
-.carousel .next { right: 5px; }
+.carousel button:hover {
+    background: gold;
+    color: black;
+}
+
+.carousel .prev { left: 8px; }
+.carousel .next { right: 8px; }
 
 .item h3 {
     margin-top: 10px;
@@ -111,26 +157,32 @@ p {
 .item p {
     color: violet;
     font-size: 18px;
+    margin-top: 5px;
 }
 
-
+/* SOBRE O JOGO + PERFIL */
 .about-section {
     display: flex;
     flex-wrap: wrap;
     gap: 30px;
     justify-content: center;
     align-items: flex-start;
-    padding: 50px;
+    padding: 40px;
 }
 
 .about-text {
     flex: 1;
     min-width: 300px;
-    background: #2c1038;
-    padding: 20px;
+    background: linear-gradient(135deg, #351641);
+    padding: 25px;
     border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
     text-align: left;
+    transition: transform 0.3s;
+}
+
+.about-text:hover {
+    transform: scale(1.02);
 }
 
 .players-info {
@@ -146,29 +198,321 @@ p {
     padding: 15px;
     border-radius: 12px;
     text-align: left;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    display: flex; 
-    align-items: center; 
-    gap: 15px; 
+    box-shadow: 0 5px 12px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: transform 0.3s;
+    width: 700px;
+}
+
+.player-card:hover {
+    transform: translateX(5px);
+    background: #3a1449;
 }
 
 .player-card img {
-    height: 100px; 
-    width: 100px;
+    height: 100px;
+    width: 110px;
     object-fit: cover;
     border-radius: 8px;
+    border: 2px solid gold;
 }
 
 .player-card h4 {
     margin: 0;
-    color: rgb(252, 255, 203);
+    color: gold;
+    font-size: 20px;
 }
 
 .player-card p {
-    margin: 2px 0;
+    margin: 3px 0;
     color: violet;
     font-size: 16px;
-    text-align: left; 
+    text-align: left;
+}
+
+/*  LOGIN  */
+#login form {
+    background: #2c1038;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+    display: inline-block;
+}
+
+#login input {
+    width: 250px;
+    padding: 10px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+    font-size: 16px;
+}
+
+#login input:focus {
+    border: 2px solid gold;
+    box-shadow: 0 0 8px gold;
+}
+
+#login button {
+    background: gold;
+    color: black;
+    font-weight: bold;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#login button:hover {
+    background: violet;
+    color: white;
+}
+
+ /* Container geral */
+#noticias {
+    padding: 50px 20px;
+    background: linear-gradient(180deg, #351641);
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Título da seção */
+#noticias h2 {
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 40px;
+    color: #ffcc00; 
+}
+
+/* Container das notícias */
+.news-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Cada card de notícia */
+.news-card {
+    background: #2a1b47;
+    border-radius: 15px;
+    overflow: hidden;
+    /* Flexbox properties para responsividade lado a lado */
+    flex-basis: calc(33.33% - 20px);
+    flex-grow: 1; /* Permite que o card cresça para preencher a linha */
+    max-width: 250px; /* Limita o tamanho máximo do card */
+
+    cursor: pointer; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+/* Efeito ao passar o mouse */
+.news-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+}
+
+/* Imagem da notícia */
+.news-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+/* Informações da notícia */
+.news-info {
+    padding: 20px;
+}
+
+/* Categoria e data */
+.news-info .category {
+    font-weight: bold;
+    color: #ff6f61; /* cor para destacar categoria */
+}
+
+.news-info .date {
+    color: #cccccc;
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+
+/* Título da notícia */
+.news-info h3 {
+    margin: 10px 0;
+    font-size: 1.2em;
+    color: #ffffff;
+}
+
+/* Texto da notícia */
+.news-info p {
+    font-size: 0.95em;
+    color: #dddddd;
+    line-height: 1.4em;
+    text-align: left; /* Alinhamento corrigido para texto dentro do card */
+    margin: 0;
+}
+
+/* OUTRAS SEÇÕES */
+.about-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px;
+}
+
+/* Efeito ao clicar no card */
+.news-card:active {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+}
+
+/* RESPONSIVIDADE  */
+@media (max-width: 768px) {
+header {
+    flex-direction: column;
+    padding: 15px 20px;
+}
+nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+section {
+    padding: 40px 20px;
+}
+.about-section {
+    flex-direction: column;
+}
+}
+#sobre {
+    padding: 40px 20px;
+    font-family: Arial, sans-serif;
+    background: #2c1038;
+    color: #d593ff;
+}
+
+#sobre h2 {
+    text-align: center;
+    font-size: 36px;
+    margin-bottom: 50px;
+    color: #e5e11b;
+}
+
+/* Cada card de texto */
+.text-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #3a1449;
+    border-radius: 10px;
+    box-shadow: 0 8px 10px rgba(0,0,0,0.2);
+    padding: 10px;
+    margin-bottom: 30px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer; 
+}
+
+.text-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px (0,0,0,0.3);
+}
+
+/* Texto dentro do card */
+.text-content {
+    flex: 3;
+    padding-right: 20px;
+}
+
+.text-content h3, .text-content h4 {
+    color: #f0e68c;
+    margin-bottom: 10px;
+}
+
+.text-content p, .text-content ul {
+    line-height: 1.0;
+}
+
+/* Imagem ao lado do texto */
+.text-image {
+    flex: 1;
+}
+
+.text-image img {
+    width: 100%;
+    border-radius: 15px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+/* Responsividade: em telas pequenas, empilha o card */
+@media screen and (max-width: 180px) {
+    .text-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .text-content {
+        padding-right: 0;
+        margin-bottom: 20px;
+    }
+    .text-image img {
+        width: 100%;
+    }
+}
+.card {
+    width: 200px; 
+    padding: 10px; 
+    margin-bottom: 15px; 
+    border: 1px solid ; 
+    border-radius: 8px; 
+    display: flex;
+    align-items: center; 
+    gap: 10px; 
+    background-color: #2e0f4c; 
+}
+
+.card img {
+    width: 30px; 
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px; 
+}
+.players-info {
+    flex: 5;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; 
+}
+
+.player-card {
+    background: #2c1038; 
+    border: 2px solid gold; 
+    border-radius: 12px; 
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 700px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5); 
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.player-card:hover {
+    transform: translateY(-5px); 
+    box-shadow: 0 6px 18px rgba(255, 215, 0, 0.7);
+}
+
+.lives{
+    border: #d593ff;
+    display:grid;
+    margin: 5%;
 }
 /* classes para formulários*/
 .form-box {

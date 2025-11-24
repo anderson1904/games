@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from .models import (
     tbUser, tbCartao, tbJogador, tbPartida, tbJogador_Partida,
     tbStream, tbNoticia, tbEdita, tbCarrinho, tbProduto, tbFoto,
-    tbEspecifica, tbCompra
+    tbEspecifica, tbCompra, tbTipoEspecificacao
 )
 
 # --- CONFIGURAÇÃO PARA O SEU USUÁRIO CUSTOMIZADO ---
@@ -78,3 +78,5 @@ admin.site.register(tbJogador_Partida) # Tabela de ligação
 admin.site.register(tbEdita) # Tabela de ligação
 admin.site.register(tbEspecifica) # Tabela de ligação
 admin.site.register(tbCompra) # Já aparece no carrinho, mas bom ter separado também
+
+admin.site.register(tbTipoEspecificacao)

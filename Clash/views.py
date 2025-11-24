@@ -12,12 +12,8 @@ from django.views.generic import (
 from datetime import datetime as dt
 from django.urls import reverse_lazy
 from .forms import *
-from .carrinho import add_to_cart
-
-# Clash/views.py
-
-from django.shortcuts import render
-from .models import tbJogador, tbProduto, tbNoticia
+from .carrinho import *
+from django.contrib.auth.decorators import login_required
 
 def home(request):
     lista_jogadores = tbJogador.objects.all()
@@ -228,7 +224,7 @@ class ProdutoCreateView(LoginRequiredMixin, CreateView):
             data['fotos'] = FotoProdutoFormSet()
         return data
 
-    def form_valid(self, form):
+def form_valid(self, form):
         context = self.get_context_data()
         fotos = context['fotos']
         
@@ -236,19 +232,32 @@ class ProdutoCreateView(LoginRequiredMixin, CreateView):
             self.object = form.save()
             if fotos.is_valid():
                 fotos.instance = self.object
-                fotos_salvas = fotos.save(commit=False)
+                fotos.save()
                 for formulario in fotos.forms:
-                    if formulario.cleaned_data and not formulario.cleaned_data.get('DELETE'):
-                        foto_obj = formulario.save(commit=False)
-                        foto_obj.produto = self.object
-                        foto_obj.save()
-                        descricao_spec = formulario.cleaned_data.get('spec_descricao')
-                        if descricao_spec:
-                            tbEspecifica.objects.create(
-                                produto=self.object,
-                                foto=foto_obj,
-                                descricao=descricao_spec
+                    if formulario.cleaned_data.get('DELETE') or not formulario.instance.pk:
+                        continue
+                    descricao_digitada = formulario.cleaned_data.get('spec_descricao')
+                    tipo_digitado = formulario.cleaned_data.get('spec_tipo')
+                    if descricao_digitada:
+                        tipo_obj = None
+                        if tipo_digitado:
+                            tipo_obj, created = tbTipoEspecificacao.objects.get_or_create(
+                                nome=tipo_digitado.strip().title()
                             )
+                        tbEspecifica.objects.update_or_create(
+                            produto=self.object,
+                            foto=formulario.instance,
+                            defaults={
+                                'descricao': descricao_digitada,
+                                'tipo': tipo_obj
+                            }
+                        )
+                    else:
+                        tbEspecifica.objects.filter(
+                            produto=self.object, 
+                            foto=formulario.instance
+                        ).delete()
+                
         return redirect(self.get_success_url())
 # --- EDITAR PRODUTO ---
 class ProdutoUpdateView(LoginRequiredMixin, UpdateView):
@@ -294,33 +303,52 @@ class ProdutoUpdateView(LoginRequiredMixin, UpdateView):
         fotos = context['fotos']
         
         with transaction.atomic():
-            # 1. Salva as alterações do Produto em si
             self.object = form.save()
             
-            # 2. Valida o Formset de Fotos
             if fotos.is_valid():
-                fotos.save()
+                fotos.instance = self.object # Vincula ao produto
+                fotos.save() # Salva as fotos e processa deleções
+                
                 for formulario in fotos.forms:
-                    if formulario.cleaned_data.get('DELETE'):
+                    # Pula se for deletado ou vazio
+                    if formulario.cleaned_data.get('DELETE') or not formulario.instance.pk:
                         continue
-                    if formulario.instance.pk:
-                        descricao_digitada = formulario.cleaned_data.get('spec_descricao')
-                        if descricao_digitada:
-                            tbEspecifica.objects.update_or_create(
-                                produto=self.object,
-                                foto=formulario.instance,
-                                defaults={'descricao': descricao_digitada}
+                    
+                    # Pega os dados dos campos extras
+                    descricao_digitada = formulario.cleaned_data.get('spec_descricao')
+                    tipo_digitado = formulario.cleaned_data.get('spec_tipo')
+                    
+                    if descricao_digitada:
+                        # 1. Resolve o TIPO (Busca ou Cria)
+                        tipo_obj = None
+                        if tipo_digitado:
+                            # O .title() deixa a primeira letra maiúscula (Cor, Tamanho)
+                            tipo_obj, created = tbTipoEspecificacao.objects.get_or_create(
+                                nome=tipo_digitado.strip().title()
                             )
-                        else:
-                            tbEspecifica.objects.filter(
-                                produto=self.object, 
-                                foto=formulario.instance
-                            ).delete()
+                        
+                        # 2. Cria ou Atualiza a Especificação
+                        tbEspecifica.objects.update_or_create(
+                            produto=self.object,
+                            foto=formulario.instance,
+                            defaults={
+                                'descricao': descricao_digitada,
+                                'tipo': tipo_obj # Salva o tipo junto!
+                            }
+                        )
+                    else:
+                        # Se apagou a descrição, remove a especificação
+                        tbEspecifica.objects.filter(
+                            produto=self.object, 
+                            foto=formulario.instance
+                        ).delete()
+                
                 
         return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy('produto_detail', kwargs={'pk': self.object.pk})
+
 
 # --- DELETAR PRODUTO ---
 class ProdutoDeleteView(LoginRequiredMixin, DeleteView):
@@ -328,7 +356,6 @@ class ProdutoDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'Clash/produto_confirm_delete.html'
     success_url = reverse_lazy('produto_list')
 
-# --- VER CARRINHO DE COMPRAS ---
 class CarrinhoView(LoginRequiredMixin, DetailView):
     model = tbCarrinho
     template_name = 'Clash/carrinho.html'
@@ -337,6 +364,7 @@ class CarrinhoView(LoginRequiredMixin, DetailView):
         # Pega o carrinho do usuário logado. Se não tiver, cria.
         carrinho, created = tbCarrinho.objects.get_or_create(User=self.request.user)
         return carrinho
+
 
 class PartidaListView(ListView):
     model = tbPartida

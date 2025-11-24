@@ -1,0 +1,24 @@
+databases:
+  - name: clash_db
+    databaseName: clash
+    user: clash_user
+
+services:
+  - type: web
+    name: royal-elixir-site
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn app.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: clash_db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: "*"

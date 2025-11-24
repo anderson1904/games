@@ -1,31 +1,114 @@
-<form action="{% url 'add_to_cart' produto.pk %}" method="post">
-    {% csrf_token %}
-    
-    {% if specs_agrupadas %}
-        <hr>
-        {% for tipo, lista_specs in specs_agrupadas.items %}
-            
-            <h4 style="color: violet;">Escolha {{ tipo }}:</h4>
-            
-            <div class="specs-selection" style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
-                {% for spec in lista_specs %}
-                    <label style="cursor: pointer; border: 1px solid #555; padding: 10px; border-radius: 8px; background: #2c1038;">
-                        <input type="radio" name="especificacao" value="{{ spec.pk }}" required>
-                        
-                        <span style="color: white; font-weight: bold;">{{ spec.descricao }}</span>
-                        
-                        {% if spec.foto %}
-                            <br>
-                            <img src="{{ spec.foto.foto.url }}" style="width: 40px; height: 40px; object-fit: cover; margin-top: 5px; border-radius: 4px;">
-                        {% endif %}
-                    </label>
-                {% endfor %}
-            </div>
-            
-        {% endfor %}
-    {% endif %}
+{% extends 'Clash/base.html' %}
+{% load static %}
 
-    <button type="submit" class="btn-custom" style="background-color: green;">
-        Comprar - R$ {{ produto.preco_venda }}
-    </button>
-</form>
+{% block content %}
+<section>
+    <div class="form-box" style="max-width: 900px;">
+        
+        <div style="display:flex; justify-content:space-between; align-items: center;">
+            <h2 style="margin: 0; color: rgb(252, 255, 203);">{{ produto.nome }}</h2>
+            <h3 style="margin: 0; color: violet;">R$ {{ produto.preco_venda }}</h3>
+        </div>
+        
+        <p style="color: #ccc; margin-top: 5px;">Tipo: {{ produto.tipo }}</p>
+        
+        <hr>
+
+        <div class="item" style="width: 100%; max-width: 400px; margin: 0 auto; background: transparent; box-shadow: none;">
+            <div class="carousel">
+                {% if produto.Foto.all %}
+                    {% for foto in produto.Foto.all %}
+                        <img src="{{ foto.foto.url }}" class="{% if forloop.first %}active{% endif %}" alt="Foto {{ produto.nome }}" style="width: 100%; height: 300px; object-fit: contain;">
+                    {% endfor %}
+                    
+                    {% if produto.Foto.count > 1 %}
+                        <button class="prev">&#10094;</button>
+                        <button class="next">&#10095;</button>
+                    {% endif %}
+                {% else %}
+                    <img src="{% static 'imgs/no-image.png' %}" class="active" alt="Sem Imagem" style="width: 100%; height: 300px; object-fit: contain;">
+                {% endif %}
+            </div>
+        </div>
+
+        <hr>
+
+        <form action="{% url 'add_to_cart' produto.pk %}" method="post">
+            {% csrf_token %}
+            
+            {% if specs_agrupadas %}
+                <h3 style="color: violet; text-align: center; margin-bottom: 15px;">Escolha sua versão:</h3>
+                
+                {% for tipo, lista_specs in specs_agrupadas.items %}
+                    
+                    <h4 style="color: white; margin-bottom: 10px;">{{ tipo|default:"Opções" }}:</h4>
+                    
+                    <div class="specs-selection" style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
+                        {% for spec in lista_specs %}
+                            <label style="cursor: pointer; border: 1px solid #555; padding: 10px; border-radius: 8px; background: #2c1038; min-width: 100px; text-align: center;">
+                                <input type="radio" name="especificacao" value="{{ spec.pk }}" required>
+                                
+                                <br>
+                                <span style="color: white; font-weight: bold;">{{ spec.descricao }}</span>
+                                
+                                {% if spec.foto %}
+                                    <div style="margin-top: 5px;">
+                                        <img src="{{ spec.foto.foto.url }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; display: inline-block;">
+                                    </div>
+                                {% endif %}
+                            </label>
+                        {% endfor %}
+                    </div>
+                    
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: #ccc;">Produto único (sem variações).</p>
+            {% endif %}
+            <div style="margin-top: 20px; margin-bottom: 20px;">
+                <label for="qtd" style="color: white; font-weight: bold; margin-right: 10px;">Quantidade:</label>
+                
+                <input type="number" id="qtd" name="quantidade" value="1" min="1" max="99" 
+                    style="width: 80px; padding: 8px; border-radius: 5px; border: 1px solid violet; background-color: #331540; color: white; text-align: center; font-size: 1.1rem;">
+            </div>
+
+            <button type="submit" class="btn-custom" style="background-color: green;">
+                Adicionar ao Carrinho
+            </button>
+        </form>
+
+        <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+            <a href="{% url 'home' %}#loja" class="btn-custom" style="width: auto; background-color: transparent; border: 1px solid violet;">Voltar para Loja</a>
+            
+            {% if user.is_staff %} <a href="{% url 'produto_update' produto.pk %}" class="btn-custom" style="width: auto; background-color: #ffc107; color: black;">Editar Produto</a>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+
+<script>
+    document.querySelectorAll('.carousel').forEach(carousel => {
+        const images = carousel.querySelectorAll('img');
+        if (images.length <= 1) return;
+
+        let currentIndex = 0;
+        const showImage = index => {
+            images.forEach((img, i) => {
+                img.classList.toggle('active', i === index);
+            });
+        };
+
+        carousel.querySelector('.prev').addEventListener('click', (e) => {
+            e.preventDefault();
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            showImage(currentIndex);
+        });
+
+        carousel.querySelector('.next').addEventListener('click', (e) => {
+            e.preventDefault();
+            currentIndex = (currentIndex + 1) % images.length;
+            showImage(currentIndex);
+        });
+    });
+</script>
+{% endblock %}
