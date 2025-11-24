@@ -22,9 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-*9n88*@l4&eyujxw1kp1q!vxi=f87f!4+#ej(^riehnsi1_bks'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['https://games-6zwa.onrender.com']
+ALLOWED_HOSTS = ['localhost','127.0.0.1','games-6zwa.onrender.com']
 
 # Application definition
 
