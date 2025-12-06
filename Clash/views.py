@@ -12,8 +12,9 @@ from django.views.generic import (
 from datetime import datetime as dt
 from django.urls import reverse_lazy
 from .forms import *
-from .carrinho import *
+from .controls.carrinho import *
 from django.contrib.auth.decorators import login_required
+
 
 def home(request):
     lista_jogadores = tbJogador.objects.all()
@@ -356,14 +357,7 @@ class ProdutoDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'Clash/produto_confirm_delete.html'
     success_url = reverse_lazy('produto_list')
 
-class CarrinhoView(LoginRequiredMixin, DetailView):
-    model = tbCarrinho
-    template_name = 'Clash/carrinho.html'
-    context_object_name = 'carrinho'
-    def get_object(self):
-        # Pega o carrinho do usuário logado. Se não tiver, cria.
-        carrinho, created = tbCarrinho.objects.get_or_create(User=self.request.user)
-        return carrinho
+
 
 
 class PartidaListView(ListView):

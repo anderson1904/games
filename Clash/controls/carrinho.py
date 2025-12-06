@@ -1,7 +1,9 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import tbProduto, tbCarrinho, tbCompra, tbEspecifica
+from ..models import tbProduto, tbCarrinho, tbCompra, tbEspecifica
+from django.views.generic import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
 # Clash/views.py
 
 @login_required
@@ -79,3 +81,11 @@ def remover_item_carrinho(request, pk):
     
     return redirect('ver_carrinho')
 
+class CarrinhoView(LoginRequiredMixin, DetailView):
+    model = tbCarrinho
+    template_name = 'Clash/carrinho.html'
+    context_object_name = 'carrinho'
+    def get_object(self):
+        # Pega o carrinho do usuário logado. Se não tiver, cria.
+        carrinho, created = tbCarrinho.objects.get_or_create(User=self.request.user)
+        return carrinho
