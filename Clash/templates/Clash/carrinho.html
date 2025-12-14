@@ -68,10 +68,19 @@
         </table>
         
         <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 30px; gap: 20px;">
-            <button class="btn-custom" style="width: auto; background-color: green; padding: 10px 30px;">
-                Finalizar Compra
-            </button>
-        </div>
+    
+    <h3 style="margin: 0; color: rgb(252, 255, 203);">
+        Total: R$ {{ carrinho.Preco_Total }}
+    </h3>
+    
+    <form action="{% url 'finalizar_compra' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn-custom" style="width: auto; background-color: green; padding: 12px 30px; font-size: 1.1rem; cursor: pointer;">
+            ✅ Finalizar Compra
+        </button>
+    </form>
+
+</div>
 
     {% else %}
         <div style="text-align: center; padding: 40px;">

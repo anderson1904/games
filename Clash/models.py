@@ -252,3 +252,40 @@ class tbCompra(models.Model):
         verbose_name_plural = "Itens de Compra"
     def __str__(self):
         return f"{self.quantidade}x {self.produto.nome} no Carrinho {self.carrinho.id}"
+
+class tbPedido(models.Model):
+    STATUS_CHOICES = (
+        ('Pendente', 'Pendente'),
+        ('Aprovado', 'Aprovado'),
+        ('Enviado', 'Enviado'),
+        ('Entregue', 'Entregue'),
+        ('Cancelado', 'Cancelado'),
+    )
+    user = models.ForeignKey(tbUser, on_delete=models.CASCADE, related_name='pedidos')
+    data_pedido = models.DateTimeField(auto_now_add=True)
+    valor_total = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pendente')
+
+    class Meta:
+        verbose_name = "Pedido"
+        verbose_name_plural = "Pedidos"
+
+    def __str__(self):
+        return f"Pedido #{self.id} de {self.user.username}"
+
+class tbItemPedido(models.Model):
+    pedido = models.ForeignKey(tbPedido, on_delete=models.CASCADE, related_name='itens')
+    produto = models.ForeignKey(tbProduto, on_delete=models.SET_NULL, null=True) # Se o produto for deletado, o histórico permanece
+    # Copiamos o nome do produto caso ele seja deletado futuramente
+    nome_produto = models.CharField(max_length=255) 
+    quantidade = models.PositiveIntegerField()
+    preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    # Como as especificações podem mudar, podemos salvar como texto para histórico simples
+    especificacoes_texto = models.TextField(blank=True, null=True) 
+
+    class Meta:
+        verbose_name = "Item do Pedido"
+        verbose_name_plural = "Itens do Pedido"
+
+    def __str__(self):
+        return f"{self.quantidade}x {self.nome_produto} (Pedido #{self.pedido.id})"

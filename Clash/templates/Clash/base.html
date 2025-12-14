@@ -44,6 +44,9 @@
             <a href="{% url 'produto_list' %}">Loja</a>
             <a href="{% url 'noticia_list' %}">Notícias</a>
             <a href="{% url 'partida_list' %}">Partidas</a>
+            {%if user.is_superuser%}
+                <a href="{% url 'lista_pedidos_admin' %}">Pedidos</a>
+            {% endif %}
             
             {% block extra-nav-header %}{% endblock %}
         </nav>

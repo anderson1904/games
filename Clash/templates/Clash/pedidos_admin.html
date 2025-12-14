@@ -1,0 +1,64 @@
+{% extends 'Clash/base.html' %}
+
+{% block content %}
+<div class="form-box" style="max-width: 1200px;">
+    <h2>📦 Gerenciamento de Pedidos (Admin)</h2>
+    <hr>
+
+    {% if pedidos %}
+        <table style="width: 100%; color: white; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr style="border-bottom: 2px solid violet; text-align: left; background-color: rgba(255, 255, 255, 0.1);">
+                    <th style="padding: 15px;">ID</th>
+                    <th style="padding: 15px;">Cliente</th>
+                    <th style="padding: 15px;">Data</th>
+                    <th style="padding: 15px;">Total</th>
+                    <th style="padding: 15px;">Status</th>
+                    <th style="padding: 15px;">Itens do Pedido</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                <tr style="border-bottom: 1px solid #444; vertical-align: top;">
+                    <td style="padding: 15px; font-weight: bold;">#{{ pedido.id }}</td>
+                    
+                    <td style="padding: 15px;">
+                        {{ pedido.user.get_full_name|default:pedido.user.username }}<br>
+                        <small style="color: #bbb;">{{ pedido.user.email }}</small>
+                    </td>
+                    
+                    <td style="padding: 15px;">
+                        {{ pedido.data_pedido|date:"d/m/Y H:i" }}
+                    </td>
+                    
+                    <td style="padding: 15px; color: lightgreen;">
+                        R$ {{ pedido.valor_total }}
+                    </td>
+                    
+                    <td style="padding: 15px;">
+                        <span style="padding: 5px 10px; border-radius: 5px; background-color: {% if pedido.status == 'Entregue' %}green{% elif pedido.status == 'Cancelado' %}red{% else %}orange{% endif %}; color: black; font-weight: bold; font-size: 0.8rem;">
+                            {{ pedido.status }}
+                        </span>
+                    </td>
+
+                    <td style="padding: 15px;">
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            {% for item in pedido.itens.all %}
+                                <li style="margin-bottom: 8px; border-bottom: 1px dashed #555; padding-bottom: 5px;">
+                                    <strong>{{ item.quantidade }}x</strong> {{ item.nome_produto }}
+                                    {% if item.especificacoes_texto %}
+                                        <br><span style="color: violet; font-size: 0.85rem;">({{ item.especificacoes_texto }})</span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="text-align: center; padding: 40px; color: #bbb;">Nenhum pedido realizado até o momento.</p>
+    {% endif %}
+</div>
+{% endblock %}

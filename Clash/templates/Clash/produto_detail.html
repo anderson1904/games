@@ -33,7 +33,7 @@
 
         <hr>
 
-        <form action="{% url 'add_to_cart' produto.pk %}" method="post">
+        <form action="{% url 'adicionar_ao_carrinho' produto.pk %}" method="post">
             {% csrf_token %}
             
             {% if specs_agrupadas %}
