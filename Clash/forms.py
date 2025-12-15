@@ -151,7 +151,7 @@ class StreamOpcionalForm(forms.ModelForm):
 class ProdutoForm(forms.ModelForm):
     class Meta:
         model = tbProduto
-        fields = ('nome', 'tipo', 'preco_compra', 'preco_venda')
+        fields = ('nome', 'tipo','descricao', 'preco_compra', 'preco_venda')
 
 # --- FORMULÁRIO CUSTOMIZADO PARA FOTO + ESPECIFICAÇÃO ---
 

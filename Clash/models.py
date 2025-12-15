@@ -176,6 +176,7 @@ class tbCarrinho(models.Model):
 
 class tbProduto(models.Model):
     nome = models.CharField(max_length=255)
+    descricao = models.TextField(null=True, blank=True)
     tipo = models.CharField(max_length=100, blank=True)
     preco_compra = models.DecimalField(max_digits=10, decimal_places=2)
     preco_venda = models.DecimalField(max_digits=10, decimal_places=2)
