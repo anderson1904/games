@@ -1,26 +1,62 @@
 {% extends 'Clash/base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Gerenciar Produtos</h1>
-        <a href="{% url 'produto_create' %}" class="btn btn-primary">Novo Produto</a>
+<div class="container" style="max-width: 1200px; margin: 0 auto;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 0 20px;">
+        <h1 style="color: rgb(252, 255, 203);">📦 Gerenciar Produtos</h1>
+        <a href="{% url 'produto_create' %}" class="btn-custom" style="background-color: green; text-decoration: none; padding: 10px 20px;">
+            + 
+        </a>
     </div>
 
-    <div class="store"> {% for produto in produtos %}
-        <div class="item">
-            <h3>{{ produto.nome }}</h3>
-            <p>Tipo: {{ produto.tipo }}</p>
-            <p>Venda: R$ {{ produto.preco_venda }}</p>
+    <div class="store"> 
+        {% for produto in produtos %}
+        <div class="item" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
             
-            <div style="margin-top: 10px;">
-                <a href="{% url 'produto_detail' produto.pk %}" class="btn btn-sm btn-info">Ver</a>
-                <a href="{% url 'produto_update' produto.pk %}" class="btn btn-sm btn-warning">Editar</a>
-                <a href="{% url 'produto_delete' produto.pk %}" class="btn btn-sm btn-danger">X</a>
+            <div style="width: 100%; height: 200px; overflow: hidden; border-radius: 10px 10px 0 0; background-color: #000;">
+                {% if produto.Foto.first %}
+                    <img src="{{ produto.Foto.first.foto.url }}" alt="{{ produto.nome }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    <img src="{% static 'imgs/no-image.png' %}" alt="Sem imagem" style="width: 100%; height: 100%; object-fit: contain; opacity: 0.5;">
+                {% endif %}
             </div>
+
+            <div style="padding: 15px; flex-grow: 1;">
+                <h3 style="margin-top: 0; color: white;">{{ produto.nome }}</h3>
+                
+                <p style="color: #bbb; font-size: 0.9rem; margin-bottom: 10px;">
+                    {{ produto.descricao|default:"Sem descrição."|truncatechars:60 }}
+                </p>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                    <span style="background-color: #444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">
+                        {{ produto.tipo|default:"Geral" }}
+                    </span>
+                    <strong style="color: violet; font-size: 1.2rem;">R$ {{ produto.preco_venda }}</strong>
+                </div>
+            </div>
+            
+            <div style="padding: 15px; border-top: 1px solid #444; display: flex; gap: 5px;">
+                <a href="{% url 'produto_detail' produto.pk %}" class="btn-custom" style="flex: 1; padding: 8px; font-size: 0.9rem; background-color: violet; color: white; text-decoration: none;">
+                    Ver
+                </a>
+                
+                <a href="{% url 'produto_update' produto.pk %}" class="btn-custom" style="flex: 1; padding: 8px; font-size: 0.9rem; background-color: #ffc107; color: black; text-decoration: none;">
+                    Editar
+                </a>
+                
+                <a href="{% url 'produto_delete' produto.pk %}" class="btn-custom" style="flex: 0; padding: 8px 12px; font-size: 0.9rem; background-color: #dc3545; color: white; text-decoration: none;" title="Excluir">
+                    🗑️
+                </a>
+            </div>
+
         </div>
         {% empty %}
-        <p>Nenhum produto cadastrado.</p>
+        <div style="width: 100%; text-align: center; padding: 50px;">
+            <p style="color: #ccc; font-size: 1.2rem;">Nenhum produto cadastrado na loja.</p>
+        </div>
         {% endfor %}
     </div>
 </div>

@@ -105,8 +105,6 @@ def finalizar_compra(request):
             tipo_nome = spec.tipo.nome if spec.tipo else "Opção"
             lista_specs.append(f"{tipo_nome}: {spec.descricao}")
         texto_specs = " | ".join(lista_specs)
-
-        # Salva o item congelado (preço e specs da hora da compra)
         tbItemPedido.objects.create(
             pedido=novo_pedido,
             produto=item_carrinho.produto,
@@ -115,8 +113,6 @@ def finalizar_compra(request):
             preco_unitario=item_carrinho.valor_compra,
             especificacoes_texto=texto_specs
         )
-
-    # 3. Esvazia o carrinho e avisa o usuário
     carrinho.itens.all().delete()
     messages.success(request, f"Pedido #{novo_pedido.id} realizado com sucesso!")
 
@@ -171,9 +167,7 @@ class PedidoListView(UserPassesTestMixin, ListView):
     model = tbPedido
     template_name = 'Clash/pedidos_admin.html'
     context_object_name = 'pedidos'
-    ordering = ['-data_pedido'] # Mostra os mais recentes primeiro
-
-    # Essa função define quem pode acessar a página
+    ordering = ['-data_pedido'] 
     def test_func(self):
         return self.request.user.is_superuser
 
