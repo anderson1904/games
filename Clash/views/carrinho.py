@@ -131,7 +131,7 @@ def finalizar_compra(request):
     # 2. Cria o Pedido (Cabeçalho)
     novo_pedido = tbPedido.objects.create(
         user=request.user,
-        valor_total=carrinho.Preco_Total # Usa a property do model tbCarrinho
+        valor_total=carrinho.preco_total # Usa a property do model tbCarrinho
     )
 
     # 3. Copia cada item do carrinho para a tabela de histórico (tbItemPedido)

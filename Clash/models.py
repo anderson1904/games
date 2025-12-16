@@ -168,11 +168,11 @@ class tbEdita(models.Model):
 #relativos a compras e vendas
 class tbCarrinho(models.Model):
     User = models.ForeignKey(tbUser, on_delete=models.CASCADE)
-    Preco_Total = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2, 
-        default=0.00
-    )
+    @property
+    def preco_total(self):
+        itens = self.itens.all()
+        total = sum([item.valor_total for item in itens])
+        return total
 
 class tbProduto(models.Model):
     nome = models.CharField(max_length=255)
